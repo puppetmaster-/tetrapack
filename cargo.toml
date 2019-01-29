@@ -1,0 +1,28 @@
+[package]
+name= "tetrapack"
+description = "Various small add-ons for the tetra game engine"
+version = "0.1.0"
+repository = "https://github.com/puppetmaster-/tetrapack"
+authors = ["puppetmaster <test@xyz.com>"]
+license = "MIT"
+readme = "README.md"
+edition = '2018'
+publish = false
+
+[lib]
+name = "tetrapack"
+crate-type = ["dylib"]
+path = "src/lib.rs"
+
+[dependencies]
+tetra = "0.2"
+
+# json and xml parsing
+serde = "1.0"
+serde_json = "1.0"
+serde_derive = "1.0"
+serde-xml-rs = "0.3"
+
+# randomize
+rand = "0.6"
+rand_core = "0.2.2"
