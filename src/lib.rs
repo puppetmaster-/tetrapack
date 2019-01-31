@@ -11,5 +11,3 @@ pub mod fps;
 pub mod tilemap;
 mod pyxeledit;
 mod tiled;
-
-use self::fps::Fps;
