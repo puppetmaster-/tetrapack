@@ -67,22 +67,29 @@ impl Tilemap{
         }
     }
 
-    pub fn get_id_at_position(&self,position: Vec2) -> Vec<i64>{
-        //let x = position.x % self.tile_width;
-        return vec![1];
+    pub fn get_id_at_position(&self,position: Vec2) -> i32{
+        let x = position.x as i64 / self.tile_width;
+        let y = position.y as i64 / self.tile_height;
+        return self.get_id_at(x,y);
     }
 
-    pub fn get_id_at(&self,x: i64,y: i64) -> Vec<u32>{
-        let mut ids = vec![];
-        for layer in self.layers.iter() {
-            for tile in layer.tiles.iter(){
+    pub fn get_id_at(&self,x: i64,y: i64) -> i32{
+        if self.layer_to_draw == -1{
+            for layer in self.layers.iter() {
+                for tile in layer.tiles.iter(){
+                    if tile.x == x && tile.y == y{
+                        return tile.id as i32;
+                    }
+                }
+            }
+        }else{
+            for tile in self.layers.get(self.layer_to_draw as usize).unwrap().tiles.iter(){
                 if tile.x == x && tile.y == y{
-                    let id = tile.id;
-                    ids.push(id);
+                    return tile.id as i32;
                 }
             }
         }
-        return ids;
+        return -1;
     }
 
     pub fn draw<P>(&self, ctx: &mut Context, params: P) where P: Into<DrawParams>{
