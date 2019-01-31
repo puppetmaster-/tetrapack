@@ -7,6 +7,8 @@ use tetra::{Context};
 
 use tetra::time;
 
+use self::Fps;
+
 pub struct Fps{
     fps_tracker: VecDeque<f64>,
     last_frame: Instant,
