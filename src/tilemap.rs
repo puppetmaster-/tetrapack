@@ -43,6 +43,22 @@ impl Tilemap{
         self
     }
 
+    pub fn viewport(&mut self, rectangle: Rectangle) -> &Tilemap{
+        self.viewport = rectangle;
+        self
+    }
+
+    fn is_inside_viewport(&self, position: Vec2) -> bool{
+        if position.x < self.viewport.x ||
+            position.y < self.viewport.y ||
+            position.x > self.viewport.x + self.viewport.width ||
+            position.y > self.viewport.y + self.viewport.height {
+            false
+        }else{
+            true
+        }
+    }
+
     pub fn layer(&mut self, layer_to_draw: i64) ->&Tilemap{
         self.layer_to_draw = layer_to_draw;
         self
@@ -97,14 +113,17 @@ impl Tilemap{
         for (i, layer) in self.layers.iter().enumerate(){
             if (self.layer_to_draw == -1 && layer.visibility)  || (self.layer_to_draw == i as i64 && layer.visibility){
                 for tile in layer.tiles.iter(){
+                    let tmp_pos = Vec2::new(params.position.x + tile.position_x, params.position.y + tile.position_y);
                     let rectangle = self.tile_rectangles.get(&tile.id).unwrap();
-                    self.texture.draw(ctx, DrawParams::new()
-                        .position(Vec2::new(params.position.x + tile.position_x, params.position.y + tile.position_y))
-                        .clip(*rectangle)
-                        .rotation(tile.rotation)
-                        .scale(tile.scale)
-                        .color(layer.color)
-                    );
+                    if self.is_inside_viewport(tmp_pos.clone()){ //only draw whats inside viewport
+                        self.texture.draw(ctx, DrawParams::new()
+                            .position(tmp_pos)
+                            .clip(*rectangle)
+                            .rotation(tile.rotation)
+                            .scale(tile.scale)
+                            .color(layer.color)
+                        );
+                    }
                 }
             }
         }
@@ -120,14 +139,17 @@ impl Drawable for Tilemap {
         for (i, layer) in self.layers.iter().enumerate(){
             if (self.layer_to_draw == -1 && layer.visibility)  || (self.layer_to_draw == i as i64 && layer.visibility){
                 for tile in layer.tiles.iter(){
-                    let rectangle = self.tile_rectangles.get(&tile.id).unwrap();
-                    self.texture.draw(ctx, DrawParams::new()
-                        .position(Vec2::new(params.position.x + tile.position_x, params.position.y + tile.position_y))
-                        .clip(*rectangle)
-                        .rotation(tile.rotation)
-                        .scale(tile.scale)
-                        .color(layer.color)
-                    );
+                    let tmp_pos = Vec2::new(params.position.x + tile.position_x, params.position.y + tile.position_y);
+                    if self.is_inside_viewport(tmp_pos.clone()) { //only draw whats inside viewport
+                        let rectangle = self.tile_rectangles.get(&tile.id).unwrap();
+                        self.texture.draw(ctx, DrawParams::new()
+                            .position(tmp_pos)
+                            .clip(*rectangle)
+                            .rotation(tile.rotation)
+                            .scale(tile.scale)
+                            .color(layer.color)
+                        );
+                    }
                 }
             }
         }
@@ -135,6 +157,7 @@ impl Drawable for Tilemap {
 }
 
 pub struct Tilemap {
+    viewport: Rectangle,
     tile_height: i64,
     tile_width: i64,
     layers: Vec<Layer>,
@@ -177,6 +200,7 @@ fn get_tile_rectangles(texture_height: i32, texture_width: i32, tile_width: i64,
 
 fn transform_pyxeltilemap(texture: Texture, pyxeltilemap: PyxelTilemap) ->Tilemap{
     Tilemap{
+        viewport: Rectangle::new(0.0, 0.0,100.0,100.0),
         tile_height: pyxeltilemap.tile_height,
         tile_width: pyxeltilemap.tile_width,
         layers: transform_pyxellayer(&pyxeltilemap.layers),
@@ -219,6 +243,7 @@ fn transform_pyxeltile(pyxeltiles: &Vec<pyxeledit::Tile>) -> Vec<Tile>{
 
 fn transform_tiledtilemap(texture: Texture, tiledtilemap: TiledTilemap) ->Tilemap{
     Tilemap{
+        viewport: Rectangle::new(0.0, 0.0,100.0,100.0),
         tile_height: tiledtilemap.tile_height,
         tile_width: tiledtilemap.tile_width,
         layers: transform_tiledlayer(&tiledtilemap.layers),
