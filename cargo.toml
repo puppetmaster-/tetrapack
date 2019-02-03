@@ -15,7 +15,8 @@ crate-type = ["lib"]
 path = "src/lib.rs"
 
 [dependencies]
-tetra = "0.2"
+tetra = { git = "https://github.com/17cupsofcoffee/tetra"}
+#tetra = "0.2"
 
 # json and xml parsing
 serde = "1.0"
