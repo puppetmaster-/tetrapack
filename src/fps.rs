@@ -106,7 +106,7 @@ impl FpsParams {
 impl Default for FpsParams {
     fn default() -> FpsParams {
         FpsParams {
-            color: Color::WHITE,
+            color: Color::rgb(1.0,1.0,1.0),
             size: 12.0,
         }
     }
