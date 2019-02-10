@@ -2,41 +2,58 @@
 use std::collections::VecDeque;
 use std::time::Instant;
 
-use tetra::graphics::{Drawable, DrawParams, Font, Text};
+use tetra::graphics::{Drawable, DrawParams, Font, Text, Color};
 use tetra::{Context};
 
 use tetra::time;
 
 pub struct Fps{
-    fps_tracker: VecDeque<f64>,
-    last_frame: Instant,
+    color: Color,
     text: Text,
+    too_low: bool,
+    too_low_color: Color,
 }
 
 impl Fps{
     pub fn new(font: Font) -> Fps{
         let text = Text::new("FPS",font,16.0,);
+        let color = Color::rgb(1.0,1.0,1.0);
+        let too_low_color = Color::rgb(1.0,0.0,0.0);
         Fps{
-            fps_tracker: VecDeque::new(),
-            last_frame: Instant::now(),
+            color,
             text,
+            too_low_color,
+            too_low: false,
         }
     }
-    pub fn update(&mut self){
-        let current_frame = Instant::now();
-        let elapsed = current_frame - self.last_frame;
+    pub fn update(&mut self, ctx: &mut Context){
+        let fps = time::get_fps(ctx) as i64;
 
-        self.fps_tracker.push_back(time::duration_to_f64(elapsed));
-
-        if self.fps_tracker.len() > 200 {
-            self.fps_tracker.pop_front();
+        if fps < 60 && !self.too_low {
+            self.too_low = true
+        }else if fps >= 60 && self.too_low {
+            self.too_low = false
         }
 
-        let fps = (1.0 / (self.fps_tracker.iter().sum::<f64>() / self.fps_tracker.len() as f64)) as i64 ;
-
         self.text.set_content(format!("FPS {:?}",fps));
+    }
 
-        self.last_frame = current_frame;
+    pub fn black(&mut self) -> &mut Self{
+        self.color(Color::rgb(1.0,1.0,1.0))
+    }
+
+    pub fn white(&mut self) -> &mut Self{
+        self.color(Color::rgb(0.0,0.0,0.0))
+    }
+
+    pub fn color(&mut self, color: Color) -> &mut Self{
+        self.color = color;
+        self
+    }
+
+    pub fn size(&mut self, size: f32) -> &mut Self{
+        self.text.set_size(size);
+        self
     }
 }
 
@@ -45,6 +62,13 @@ impl Drawable for Fps {
         where
             P: Into<DrawParams>,
     {
-        let params = params.into();
+        let mut params = params.into();
+        
+        if self.too_low{
+            params.color = self.too_low_color;
+        }else{
+            params.color = self.color;
+        }
+
         self.text.draw(ctx, params)}
 }
