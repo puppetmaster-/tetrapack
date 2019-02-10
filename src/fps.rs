@@ -15,17 +15,23 @@ pub struct Fps{
 }
 
 impl Fps{
-    pub fn new(font: Font) -> Fps{
-        let text = Text::new("FPS",font,16.0,);
-        let color = Color::rgb(1.0,1.0,1.0);
-        let too_low_color = Color::rgb(1.0,0.0,0.0);
-        Fps{
-            color,
-            text,
-            too_low_color,
-            too_low: false,
+    pub fn new<P>(font: Font, params: P) -> Fps
+        where
+        P: Into<FpsParams>,
+        {
+            let params = params.into();
+
+            let text = Text::new("FPS", font, params.size, );
+            let color = params.color;
+            let too_low_color = Color::rgb(1.0, 0.0, 0.0);
+            Fps {
+                color,
+                text,
+                too_low_color,
+                too_low: false,
+            }
         }
-    }
+
     pub fn update(&mut self, ctx: &mut Context){
         let fps = time::get_fps(ctx) as i64;
 
@@ -71,4 +77,49 @@ impl Drawable for Fps {
         }
 
         self.text.draw(ctx, params)}
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct FpsParams {
+    color: Color,
+    size: f32,
+}
+impl FpsParams {
+    /// Creates a new set of `FpsParams`.
+    pub fn new() -> FpsParams {
+        FpsParams::default()
+    }
+
+    /// Sets the color.
+    pub fn color(mut self, color: Color) -> FpsParams {
+        self.color = color;
+        self
+    }
+}
+
+impl Default for FpsParams {
+    fn default() -> FpsParams {
+        FpsParams {
+            color: Color::WHITE,
+            size: 12.0,
+        }
+    }
+}
+
+impl From<Color> for FpsParams {
+    fn from(color: Color) -> FpsParams {
+        FpsParams {
+            color,
+            ..FpsParams::default()
+        }
+    }
+}
+
+impl From<f32> for FpsParams {
+    fn from(size: f32) -> FpsParams {
+        FpsParams {
+            size,
+            ..FpsParams::default()
+        }
+    }
 }
