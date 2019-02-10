@@ -39,11 +39,11 @@ impl Fps{
     }
 
     pub fn black(&mut self) -> &mut Self{
-        self.color(Color::rgb(1.0,1.0,1.0))
+        self.color(Color::rgb(0.0,0.0,0.0))
     }
 
     pub fn white(&mut self) -> &mut Self{
-        self.color(Color::rgb(0.0,0.0,0.0))
+        self.color(Color::rgb(1.0,1.0,1.0))
     }
 
     pub fn color(&mut self, color: Color) -> &mut Self{
