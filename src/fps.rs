@@ -95,6 +95,12 @@ impl FpsParams {
         self.color = color;
         self
     }
+
+    /// Sets the size.
+    pub fn size(mut self, size: f32) -> FpsParams {
+        self.size = size;
+        self
+    }
 }
 
 impl Default for FpsParams {
