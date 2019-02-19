@@ -48,7 +48,39 @@ impl Tilemap{
         self
     }
 
-    fn is_inside_viewport(&self, position: Vec2) -> bool{
+    pub fn remove_tile(&mut self,layer: usize, position: Vec2){
+        let x = position.x as i64 / self.tile_width;
+        let y = position.y as i64 / self.tile_height;
+        let mut layer = self.layers.get_mut(layer).unwrap();
+        layer.tiles.retain(|t| !(t.x ==x && t.y == y));
+    }
+
+    pub fn set_tileid_at(&mut self, layer: usize, new_id: u32, position: Vec2){
+        let x = position.x as i64 / self.tile_width;
+        let y = position.y as i64 / self.tile_height;
+        let id: i32 = self.get_id_at(x,y);
+        let mut layer = self.layers.get_mut(layer).unwrap();
+        if id == -1{
+            println!("add new tile!");
+            let new_tile = Tile{
+                id: new_id,
+                x,
+                y,
+                position_x: (x * self.tile_width) as f32,
+                position_y: (y * self.tile_height) as f32,
+                rotation: 0.0,
+                scale: Vec2::new(1.0,1.0),
+            };
+
+            layer.tiles.push(new_tile);
+        }else{
+            println!("change existing tile!");
+            layer.tiles.iter_mut().filter(|tile| tile.x == x && tile.y == y).for_each(|tile| tile.id = new_id)
+        }
+    }
+
+
+    fn is_inside_viewport(&self, position: &Vec2) -> bool{
         if position.x < self.viewport.x ||
             position.y < self.viewport.y ||
             position.x > self.viewport.x + self.viewport.width ||
@@ -115,7 +147,7 @@ impl Tilemap{
                 for tile in layer.tiles.iter(){
                     let tmp_pos = Vec2::new(params.position.x + tile.position_x, params.position.y + tile.position_y);
                     let rectangle = self.tile_rectangles.get(&tile.id).unwrap();
-                    if self.is_inside_viewport(tmp_pos.clone()){ //only draw whats inside viewport
+                    if self.is_inside_viewport(&tmp_pos){ //only draw whats inside viewport
                         self.texture.draw(ctx, DrawParams::new()
                             .position(tmp_pos)
                             .clip(*rectangle)
@@ -140,11 +172,10 @@ impl Drawable for Tilemap {
             if (self.layer_to_draw == -1 && layer.visibility)  || (self.layer_to_draw == i as i64 && layer.visibility){
                 for tile in layer.tiles.iter(){
                     let tmp_pos = Vec2::new(params.position.x + tile.position_x, params.position.y + tile.position_y);
-                    if self.is_inside_viewport(tmp_pos.clone()) { //only draw whats inside viewport
-                        let rectangle = self.tile_rectangles.get(&tile.id).unwrap();
+                    if self.is_inside_viewport(&tmp_pos) { //only draw whats inside viewport
                         self.texture.draw(ctx, DrawParams::new()
                             .position(tmp_pos)
-                            .clip(*rectangle)
+                            .clip(self.tile_rectangles[&tile.id])
                             .rotation(tile.rotation)
                             .scale(tile.scale)
                             .color(layer.color)
