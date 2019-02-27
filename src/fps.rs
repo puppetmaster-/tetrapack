@@ -1,7 +1,4 @@
 
-use std::collections::VecDeque;
-use std::time::Instant;
-
 use tetra::graphics::{Drawable, DrawParams, Font, Text, Color};
 use tetra::{Context};
 
@@ -17,20 +14,20 @@ pub struct Fps{
 impl Fps{
     pub fn new<P>(font: Font, params: P) -> Fps
         where
-        P: Into<FpsParams>,
-        {
-            let params = params.into();
+            P: Into<FpsParams>,
+    {
+        let params = params.into();
 
-            let text = Text::new("FPS", font, params.size, );
-            let color = params.color;
-            let too_low_color = Color::rgb(1.0, 0.0, 0.0);
-            Fps {
-                color,
-                text,
-                too_low_color,
-                too_low: false,
-            }
+        let text = Text::new("FPS", font, params.size, );
+        let color = params.color;
+        let too_low_color = Color::rgb(1.0, 0.0, 0.0);
+        Fps {
+            color,
+            text,
+            too_low_color,
+            too_low: false,
         }
+    }
 
     pub fn update(&mut self, ctx: &mut Context){
         let fps = time::get_fps(ctx) as i64;
@@ -69,7 +66,7 @@ impl Drawable for Fps {
             P: Into<DrawParams>,
     {
         let mut params = params.into();
-        
+
         if self.too_low{
             params.color = self.too_low_color;
         }else{
