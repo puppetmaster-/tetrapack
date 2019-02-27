@@ -1,11 +1,4 @@
-//extern crate xmlparser as xml;
 
-// http://doc.mapeditor.org/en/stable/reference/tmx-map-format/#data
-// https://github.com/vnen/godot-tiled-importer/blob/master/addons/vnen.tiled_importer/tiled_map_reader.gd
-
-//https://stackoverflow.com/questions/37970355/read-xml-file-into-struct
-
-//https://github.com/RReverser/serde-xml-rs
 
 const FLIP_HOR_VER_DIA_14_FLAG: u32 = 14;
 const FLIP_HOR_VER_12_FLAG: u32 = 12;
@@ -19,9 +12,11 @@ const ALL_FLIP_FLAGS: u32 = 0x80000000 | 0x40000000 | 0x20000000;
 impl TiledTilemap {
     pub fn new(data: &str) -> TiledTilemap{
         if data.contains("<?xml"){
+            info!("create Tilemap from Tiled (tmx).");
             let mut tmx_tilemap: TmxTilemap = serde_xml_rs::from_str(data).unwrap();
             remodel_tmx(&mut tmx_tilemap)
         }else{
+            info!("create Tilemap from Tiled (json).");
             let mut json_tilemap: JsonTilemap = serde_json::from_str(data).unwrap();
             remodel_json(&mut json_tilemap)
         }
@@ -89,7 +84,7 @@ struct Tileset{
     source: String,
 }
 
-/* Lösung mit Enum
+/* solution with Enum
 #[derive(Debug, Deserialize)]
 struct Property{
     #[serde(default="default_string")]
@@ -262,7 +257,7 @@ fn creates_tiles(nums: &Vec<u32>,width: i64,tile_width: i64, tile_height: i64, f
                 FLIP_VER_DIA_6_FLAG => { rotation = 4.71;shift_y = tile_height},
                 FLIP_HOR_DIA_10_FLAG => {rotation = 1.57;shift_x = tile_width},
                 FLIP_HOR_VER_12_FLAG => {rotation = 3.14; shift_y = tile_height; shift_x = tile_width},
-                _ => ()//println!("no match found for flags[{}]",flags),
+                _ => ()
             }
 
             let t = Tile{
@@ -274,7 +269,6 @@ fn creates_tiles(nums: &Vec<u32>,width: i64,tile_width: i64, tile_height: i64, f
                 rotation,
                 scale: (scale_x, scale_y)
             };
-            //println!("{:?}",t);
             tiles.push(t)
         }
     }

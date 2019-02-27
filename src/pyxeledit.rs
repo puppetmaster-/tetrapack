@@ -1,6 +1,7 @@
 
 impl PyxelTilemap {
     pub fn new(data: &str) -> PyxelTilemap{
+        info!("create Tilemap from PyxelEdit (json).");
         let mut pyxeltilemap: PyxelTilemap = serde_json::from_str(data).unwrap();
         remodel(&mut pyxeltilemap);
         pyxeltilemap
@@ -70,10 +71,10 @@ fn default_scale() -> (f32,f32){
 }
 
 fn remodel(tilemap: &mut PyxelTilemap){
-    println!("tilemap has {} layers",tilemap.layers.len());
+    debug!("tilemap has {} layers",tilemap.layers.len());
     for (i,layer) in tilemap.layers.iter_mut().enumerate() {
         layer.tiles.retain(|t| t.id != -1);
-        println!("layer {} has {} tile",i,layer.tiles.len());
+        debug!("layer {} has {} tile",i,layer.tiles.len());
         for tile in layer.tiles.iter_mut(){
             let mut scale = (1.0,1.0);
             let mut shift_x = 0;

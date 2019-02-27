@@ -4,6 +4,9 @@ extern crate serde_xml_rs;
 extern crate serde_json;
 extern crate rand;
 
+#[macro_use]
+extern crate log;
+
 extern crate tetra;
 
 pub mod fps;

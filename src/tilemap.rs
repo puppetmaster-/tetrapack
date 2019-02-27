@@ -74,11 +74,10 @@ impl Tilemap{
 
             layer.tiles.push(new_tile);
         }else{
-            println!("change existing tile!");
+            debug!("change existing tile!");
             layer.tiles.iter_mut().filter(|tile| tile.x == x && tile.y == y).for_each(|tile| tile.id = new_id)
         }
     }
-
 
     fn is_inside_viewport(&self, position: &Vec2) -> bool{
         if position.x < self.viewport.x ||
