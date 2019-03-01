@@ -12,5 +12,6 @@ extern crate tetra;
 pub mod fps;
 //pub mod particle;
 pub mod tilemap;
+pub mod camera;
 mod pyxeledit;
 mod tiled;

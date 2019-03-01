@@ -1,11 +1,11 @@
 use tetra::glm::Vec2;
 
-struct Camera{
+pub struct Camera{
     save_zone: Vec2,
-    delta: i32,
-    speed: i32,
+    delta: u32,
+    speed: u32,
     new_offset: Vec2,
-    offset: Vec2,
+    pub offset: Vec2,
     smooth: bool,
 }
 
@@ -13,12 +13,12 @@ impl Camera{
     pub fn new<P>(params: P) ->Camera where P: Into<CameraParams>, {
         let params = params.into();
         Camera {
-            save_zone: Vec2::new(7.0, 7.0),
-            delta: 0,
-            speed: 14,
-            new_offset: init_position,
-            offset: init_position,
-            smooth: false,
+            save_zone: params.save_zone,
+            delta: params.delta,
+            speed: params.speed,
+            new_offset: params.new_offset,
+            offset: params.offset,
+            smooth: params.smooth,
         }
     }
 
@@ -97,7 +97,7 @@ impl CameraParams {
     /// Sets the position.
     pub fn position(mut self, position: Vec2) -> CameraParams {
         self.save_zone = position;
-        self.new_offset: position;
+        self.new_offset = position;
         self
     }
 
@@ -106,19 +106,20 @@ impl CameraParams {
 impl Default for CameraParams {
     fn default() -> CameraParams {
         CameraParams {
-            save_zone: Vec2::new(7.0,7.0),
+            save_zone: Vec2::new(10.0,10.0),
             delta: 0,
             speed: 14,
-            new_offset: init_position,
-            offset: init_position,
-            smooth: false,
+            new_offset: Vec2::new(0.0,0.0),
+            offset: Vec2::new(0.0,0.0),
+            smooth: true,
         }
     }
 }
-impl From<bool> for CameraParams {
-    fn from(smooth: bool) -> CameraParams {
+impl From<Vec2> for CameraParams {
+    fn from(init_position: Vec2) -> CameraParams {
         CameraParams {
-            smooth,
+            new_offset: init_position,
+            offset: init_position,
             ..CameraParams::default()
         }
     }
