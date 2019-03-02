@@ -16,13 +16,13 @@ impl Tilemap{
     pub fn new(texture: Texture,tile_width: i64, tile_height: i64) -> Tilemap{
         info!("create empty tilemap");
         Tilemap{
-            viewport: Rectangle::new(0.0, 0.0,100.0,100.0),
+            viewport: Rectangle::new(0.0, 0.0,0.0,0.0),
             tile_height,
             tile_width,
             layers: vec![],
             tile_rectangles: get_tile_rectangles(texture.width(), texture.height(), tile_width, tile_height),
             texture,
-            layer_to_draw: -1
+            layer_to_draw: -1,
         }
     }
 
@@ -126,7 +126,6 @@ impl Tilemap{
         let id: i32 = self.get_id_at(x,y);
         let layer = self.layers.get_mut(layer).unwrap();
         if id == -1{
-            debug!("add new tile!");
             let new_tile = Tile{
                 id: new_id,
                 x,
@@ -139,20 +138,16 @@ impl Tilemap{
 
             layer.tiles.push(new_tile);
         }else{
-            debug!("change existing tile!");
             layer.tiles.iter_mut().filter(|tile| tile.x == x && tile.y == y).for_each(|tile| tile.id = new_id)
         }
     }
 
     fn is_inside_viewport(&self, position: &Vec2) -> bool{
-        if position.x < self.viewport.x ||
+        !(position.x < self.viewport.x ||
             position.y < self.viewport.y ||
             position.x > self.viewport.x + self.viewport.width ||
-            position.y > self.viewport.y + self.viewport.height {
-            false
-        }else{
-            true
-        }
+            position.y > self.viewport.y + self.viewport.height
+        )
     }
 
     pub fn draw_layer(&mut self, layer_to_draw: i64) ->&Tilemap{
@@ -182,7 +177,7 @@ impl Tilemap{
     pub fn get_id_at_position(&self,position: Vec2) -> i32{
         let x = position.x as i64 / self.tile_width;
         let y = position.y as i64 / self.tile_height;
-        return self.get_id_at(x,y);
+        self.get_id_at(x,y)
     }
 
     pub fn get_id_at(&self,x: i64,y: i64) -> i32{
@@ -201,7 +196,7 @@ impl Tilemap{
                 }
             }
         }
-        return -1;
+        -1
     }
 }
 
@@ -212,10 +207,12 @@ impl Drawable for Tilemap {
     {
         let params = params.into();
         for (i, layer) in self.layers.iter().enumerate(){
-            if (self.layer_to_draw == -1 && layer.visibility)  || (self.layer_to_draw == i as i64 && layer.visibility){
+            if (self.layer_to_draw == -1 || self.layer_to_draw == i as i64) && layer.visibility{
                 for tile in layer.tiles.iter(){
                     let tmp_pos = Vec2::new(params.position.x + tile.position_x, params.position.y + tile.position_y);
-                    if self.is_inside_viewport(&tmp_pos) { //only draw whats inside viewport
+                    // only draw whats inside viewport
+                    // or when viewport is Rectangle(0.0, 0.0, 0.0, 0.0)
+                    if self.is_inside_viewport(&tmp_pos) || draw_everything(&self.viewport) {
                         self.texture.draw(ctx, DrawParams::new()
                             .position(tmp_pos)
                             .clip(self.tile_rectangles[&tile.id])
@@ -356,4 +353,9 @@ fn transform_tiledtile(tiledtiles: &Vec<tiled::Tile>) -> Vec<Tile>{
         tiles.push(tile);
     };
     tiles
+}
+
+fn draw_everything(rectangle: &Rectangle) -> bool{
+    let rectangle_to_compare = Rectangle::new(0.0,0.0,0.0,0.0);
+    rectangle_to_compare.eq(rectangle)
 }
