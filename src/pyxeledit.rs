@@ -63,11 +63,11 @@ fn pyxel_rotation(rotation: i8) ->f32{
 }
 
 fn default_f32() -> f32{
-    return 0.0
+    0.0
 }
 
 fn default_scale() -> (f32,f32){
-    return (0.0,0.0)
+    (0.0,0.0)
 }
 
 fn remodel(tilemap: &mut PyxelTilemap){

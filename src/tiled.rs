@@ -154,15 +154,15 @@ pub struct Tile {
 }
 
 fn default_i64() -> i64{
-    return 0
+    0
 }
 
 fn default_u32() -> u32{
-    return 0
+    0
 }
 
 fn default_f32() -> f32{
-    return 0.0
+    0.0
 }
 
 fn default_vec<T>() -> Vec<T>{
@@ -171,15 +171,15 @@ fn default_vec<T>() -> Vec<T>{
 }
 
 fn default_scale() -> (f32,f32){
-    return (0.0,0.0)
+    (0.0,0.0)
 }
 
 fn default_string() -> String{
-    return String::new();
+    String::new()
 }
 
 fn default_data() -> Vec<u32>{
-   return Vec::new()
+   Vec::new()
 }
 
 fn remodel_tmx(tilemap: &mut TmxTilemap) -> TiledTilemap{
