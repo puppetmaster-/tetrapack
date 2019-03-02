@@ -96,7 +96,7 @@ impl CameraParams {
 
     /// Sets the position.
     pub fn position(mut self, position: Vec2) -> CameraParams {
-        self.save_zone = position;
+        self.offset = position;
         self.new_offset = position;
         self
     }
