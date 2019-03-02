@@ -91,7 +91,6 @@ impl Tilemap{
                     rotation: 0.0,
                     scale: Vec2::new(1.0,1.0),
                 };
-                debug!("add tile {} at {},{}",tile.id, tile.position_x, tile.position_y);
                 tiles.push(tile);
             }
         }
@@ -123,7 +122,7 @@ impl Tilemap{
     pub fn set_tileid_at(&mut self, layer: usize, new_id: u32, position: Vec2){
         let x = position.x as i64 / self.tile_width;
         let y = position.y as i64 / self.tile_height;
-        let id: i32 = self.get_id_at(x,y);
+        let id: i32 = self.get_id_at(layer, x, y);
         let layer = self.layers.get_mut(layer).unwrap();
         if id == -1{
             let new_tile = Tile{
@@ -165,7 +164,7 @@ impl Tilemap{
         }
     }
 
-    pub fn get_layer_name(&self, layer: i64) ->&str{
+    pub fn get_layer_name(&self, layer: usize) ->&str{
         match self.layers.get(layer as usize){
             None => "",
             Some(l) => {
@@ -174,26 +173,16 @@ impl Tilemap{
         }
     }
 
-    pub fn get_id_at_position(&self,position: Vec2) -> i32{
+    pub fn get_id_at_position(&self, layer: usize, position: Vec2) -> i32{
         let x = position.x as i64 / self.tile_width;
         let y = position.y as i64 / self.tile_height;
-        self.get_id_at(x,y)
+        self.get_id_at(layer, x, y)
     }
 
-    pub fn get_id_at(&self,x: i64,y: i64) -> i32{
-        if self.layer_to_draw == -1{
-            for layer in self.layers.iter() {
-                for tile in layer.tiles.iter(){
-                    if tile.x == x && tile.y == y{
-                        return tile.id as i32;
-                    }
-                }
-            }
-        }else{
-            for tile in self.layers.get(self.layer_to_draw as usize).unwrap().tiles.iter(){
-                if tile.x == x && tile.y == y{
-                    return tile.id as i32;
-                }
+    pub fn get_id_at(&self, layer: usize, x: i64,y: i64) -> i32{
+        for tile in self.layers.get(layer).unwrap().tiles.iter(){
+            if tile.x == x && tile.y == y{
+                return tile.id as i32;
             }
         }
         -1
