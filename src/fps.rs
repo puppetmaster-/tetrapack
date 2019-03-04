@@ -117,3 +117,12 @@ impl From<Color> for FpsParams {
         }
     }
 }
+
+impl From<f32> for FpsParams {
+    fn from(size: f32) -> FpsParams {
+        FpsParams {
+            size,
+            ..FpsParams::default()
+        }
+    }
+}
