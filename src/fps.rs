@@ -1,16 +1,20 @@
-
+#[allow(dead_code)]
 use tetra::graphics::{Drawable, DrawParams, Font, Text, Color};
 use tetra::{Context};
 
 use tetra::time;
 
 pub struct Fps{
-    color: Color,
     text: Text,
-    too_low: bool,
-    too_low_color: Color,
+    is_low: bool,
+    color: Color,
+    alert_color: Color,
+    update_cycle: f32,
+    update_periode: f32,
+    update_frequence: f32,
 }
 
+#[allow(dead_code)]
 impl Fps{
     pub fn new<P>(font: Font, params: P) -> Fps
         where
@@ -18,27 +22,34 @@ impl Fps{
     {
         let params = params.into();
 
-        let text = Text::new("FPS", font, params.size, );
-        let color = params.color;
-        let too_low_color = Color::rgb(1.0, 0.0, 0.0);
+        let text = Text::new("FPS", font, params.font_size, );
+
         Fps {
-            color,
             text,
-            too_low_color,
-            too_low: false,
+            color: params.color,
+            alert_color: params.alert_color,
+            update_cycle: params.update_periode,
+            update_periode: params.update_periode,
+            is_low: false,
+            update_frequence: 0.1,
         }
     }
 
     pub fn update(&mut self, ctx: &mut Context){
-        let fps = time::get_fps(ctx) as i64;
+        self.update_cycle += self.update_frequence;
 
-        if fps < 60 && !self.too_low {
-            self.too_low = true
-        }else if fps >= 60 && self.too_low {
-            self.too_low = false
+        if self.update_cycle >= self.update_periode {
+            let fps = time::get_fps(ctx) as i64;
+
+            if fps < 60 && !self.is_low {
+                self.is_low = true
+            } else if fps >= 60 && self.is_low {
+                self.is_low = false
+            }
+
+            self.text.set_content(format!("FPS {:?}", fps));
+            self.update_cycle = 0.0;
         }
-
-        self.text.set_content(format!("FPS {:?}",fps));
     }
 
     pub fn black(&mut self) -> &mut Self{
@@ -54,7 +65,7 @@ impl Fps{
         self
     }
 
-    pub fn size(&mut self, size: f32) -> &mut Self{
+    pub fn font_size(&mut self, size: f32) -> &mut Self{
         self.text.set_size(size);
         self
     }
@@ -67,8 +78,8 @@ impl Drawable for Fps {
     {
         let mut params = params.into();
 
-        if self.too_low{
-            params.color = self.too_low_color;
+        if self.is_low {
+            params.color = self.alert_color;
         }else{
             params.color = self.color;
         }
@@ -79,8 +90,12 @@ impl Drawable for Fps {
 #[derive(Debug, Clone, PartialEq)]
 pub struct FpsParams {
     color: Color,
-    size: f32,
+    alert_color: Color,
+    font_size: f32,
+    update_periode: f32,
 }
+
+#[allow(dead_code)]
 impl FpsParams {
     /// Creates a new set of `FpsParams`.
     pub fn new() -> FpsParams {
@@ -93,9 +108,20 @@ impl FpsParams {
         self
     }
 
+    /// Sets the alarm color.
+    pub fn alert_color(mut self, color: Color) -> FpsParams {
+        self.alert_color = color;
+        self
+    }
+
     /// Sets the size.
-    pub fn size(mut self, size: f32) -> FpsParams {
-        self.size = size;
+    pub fn font_size(mut self, size: f32) -> FpsParams {
+        self.font_size = size;
+        self
+    }
+
+    pub fn update_periode(mut self, update_periode: f32) -> FpsParams {
+        self.update_periode = update_periode;
         self
     }
 }
@@ -103,8 +129,10 @@ impl FpsParams {
 impl Default for FpsParams {
     fn default() -> FpsParams {
         FpsParams {
+            font_size: 12.0,
+            update_periode: 1.0,
             color: Color::rgb(1.0,1.0,1.0),
-            size: 12.0,
+            alert_color: Color::rgb(1.0, 0.0, 0.0),
         }
     }
 }
@@ -121,7 +149,7 @@ impl From<Color> for FpsParams {
 impl From<f32> for FpsParams {
     fn from(size: f32) -> FpsParams {
         FpsParams {
-            size,
+            font_size: size,
             ..FpsParams::default()
         }
     }
