@@ -9,20 +9,24 @@ use crate::tiled;
 
 use pyxeledit::PyxelTilemap;
 use tiled::TiledTilemap;
+use crate::vecgrid::VecGrid;
 
+#[allow(dead_code)]
 impl Tilemap{
     /// create empty tilemap
     /// use add_tiles_from_map or set_tiles to fill
-    pub fn new(texture: Texture,tile_width: i64, tile_height: i64) -> Tilemap{
+    pub fn new(texture: Texture,tile_width: i64, tile_height: i64, width: usize, height: usize) -> Tilemap{
         info!("create empty tilemap");
         Tilemap{
-            viewport: Rectangle::new(0.0, 0.0,0.0,0.0),
+            width,
+            height,
+            viewport: DEFAULT_RECTANGLE,
             tile_height,
             tile_width,
-            layers: vec![],
+            layers: vec![Layer {tiles: VecGrid::new(width, height),..Layer::default()}],
             tile_rectangles: get_tile_rectangles(texture.width(), texture.height(), tile_width, tile_height),
             texture,
-            layer_to_draw: -1,
+            layer_to_draw: DEFAULT_LAYER_TO_DRAW,
         }
     }
 
@@ -58,51 +62,37 @@ impl Tilemap{
         self
     }
 
-    pub fn set_tiles(&mut self, layer: usize, tiles: Vec<Tile>){
+    /// just a map with tile ids
+    /// neither rotation nor flipping
+    pub fn set_tiles_from_map(&mut self, layer: usize, list: &Vec<Vec<u32>>){
+        let tiles = self.create_tiles_from_map(list);
         match  self.layers.get_mut(layer){
-            None => {
-                self.add_layer(tiles);
-            },
+            None => self.add_layer(tiles),
             Some(layer) => layer.tiles = tiles,
         }
     }
 
-    pub fn add_tiles(&mut self, layer: usize, tiles: Vec<Tile>){
-        match  self.layers.get_mut(layer){
-            None => {
-                self.add_layer(tiles);
-            },
-            Some(layer) => layer.tiles.extend(tiles),
-        }
-    }
-
-    /// just a map with tile ids
-    /// neither rotation nor flipping
-    pub fn add_tiles_from_map(&mut self, layer: usize,list: Vec<Vec<u32>>){
-        let mut tiles = vec![];
+    fn create_tiles_from_map(&mut self, list: &Vec<Vec<u32>>)->VecGrid<Tile>{
+        let mut tiles = VecGrid::new(list.len(), list[0].len());
         for (x,row) in list.iter().enumerate() {
             for (y,id) in row.iter().enumerate(){
-                let tile = Tile{
+                tiles.set(Tile {
                     id: *id,
                     x: x as i64,
                     y: y as i64,
                     position_x: (x as i64 * self.tile_width) as f32,
                     position_y: (y as i64 * self.tile_height) as f32,
-                    rotation: 0.0,
-                    scale: Vec2::new(1.0,1.0),
-                };
-                tiles.push(tile);
-            }
+                    ..Tile::default()
+                },x,y);
+            };
         }
-        self.add_tiles(layer, tiles);
+        tiles
     }
 
-    fn add_layer(&mut self,tiles: Vec<Tile>){
+    fn add_layer(&mut self, tiles: VecGrid<Tile>){
         let layer = Layer{
             tiles,
-            name: "".to_string(),
-            visibility: true,
-            color: Color::rgb(1.0, 1.0, 1.0),
+            ..Layer::default()
         };
         self.layers.push(layer);
     }
@@ -112,33 +102,25 @@ impl Tilemap{
         self
     }
 
-    pub fn remove_tile(&mut self,layer: usize, position: Vec2){
-        let x = position.x as i64 / self.tile_width;
-        let y = position.y as i64 / self.tile_height;
-        let layer = self.layers.get_mut(layer).unwrap();
-        layer.tiles.retain(|t| !(t.x ==x && t.y == y));
-    }
-
     pub fn set_tileid_at(&mut self, layer: usize, new_id: u32, position: Vec2){
-        let x = position.x as i64 / self.tile_width;
-        let y = position.y as i64 / self.tile_height;
-        let id: i32 = self.get_id_at(layer, x, y);
-        let layer = self.layers.get_mut(layer).unwrap();
-        if id == -1{
-            let new_tile = Tile{
-                id: new_id,
-                x,
-                y,
-                position_x: (x * self.tile_width) as f32,
-                position_y: (y * self.tile_height) as f32,
-                rotation: 0.0,
-                scale: Vec2::new(1.0,1.0),
-            };
-
-            layer.tiles.push(new_tile);
-        }else{
-            layer.tiles.iter_mut().filter(|tile| tile.x == x && tile.y == y).for_each(|tile| tile.id = new_id)
-        }
+        let x = (position.x as i64 / self.tile_width) as usize;
+        let y = (position.y as i64 / self.tile_height) as usize;
+        match self.layers.get_mut(layer){
+            None => error!("layer{} not found!", layer),
+            Some(layer) => {
+                match layer.tiles.get_mut(x, y){
+                    None => layer.tiles.set(Tile{
+                            id: new_id,
+                            x: x as i64,
+                            y: y as i64,
+                            position_x: (x as i64 * self.tile_width) as f32,
+                            position_y: (y as i64 * self.tile_height) as f32,
+                            ..Tile::default()
+                        }, x, y),
+                    Some(tile) => tile.id = new_id,
+                };
+            },
+        };
     }
 
     fn is_inside_viewport(&self, position: &Vec2) -> bool{
@@ -167,48 +149,58 @@ impl Tilemap{
     pub fn get_layer_name(&self, layer: usize) ->&str{
         match self.layers.get(layer as usize){
             None => "",
-            Some(l) => {
-                &l.name
-            },
+            Some(layer) => &layer.name,
         }
     }
 
     pub fn get_id_at_position(&self, layer: usize, position: Vec2) -> i32{
         let x = position.x as i64 / self.tile_width;
         let y = position.y as i64 / self.tile_height;
-        self.get_id_at(layer, x, y)
+        self.get_id_at(layer, x as usize, y as usize)
     }
 
-    pub fn get_id_at(&self, layer: usize, x: i64,y: i64) -> i32{
-        for tile in self.layers.get(layer).unwrap().tiles.iter(){
-            if tile.x == x && tile.y == y{
-                return tile.id as i32;
-            }
+    pub fn get_id_at(&self, layer_nr: usize, x: usize,y: usize) -> i32{
+        match self.layers.get(layer_nr) {
+            None => {
+                debug!("no layer!");
+                -1
+            },
+            Some(layer) => {
+                match layer.tiles.get(x,y){
+                    None => {
+                        debug!("layer[{}] {}, no tile at {},{}!",layer_nr, layer.name, x,y);
+                        -1
+                    },
+                    Some(tile) => tile.id as i32
+                }
+            },
         }
-        -1
     }
 }
 
 impl Drawable for Tilemap {
     fn draw<P>(&self, ctx: &mut Context, params: P)
         where
-            P: Into<DrawParams>,
+          P: Into<DrawParams>,
     {
         let params = params.into();
-        for (i, layer) in self.layers.iter().enumerate(){
-            if (self.layer_to_draw == -1 || self.layer_to_draw == i as i64) && layer.visibility{
-                for tile in layer.tiles.iter(){
-                    let tmp_pos = Vec2::new(params.position.x + tile.position_x, params.position.y + tile.position_y);
-                    // only draw whats inside viewport
-                    // or when viewport is Rectangle(0.0, 0.0, 0.0, 0.0)
-                    if self.is_inside_viewport(&tmp_pos) || draw_everything(&self.viewport) {
-                        self.texture.draw(ctx, DrawParams::new()
-                            .position(tmp_pos)
-                            .clip(self.tile_rectangles[&tile.id])
-                            .rotation(tile.rotation)
-                            .scale(tile.scale)
-                            .color(layer.color)
-                        );
+        for (i, layer) in self.layers.iter().enumerate() {
+            if (self.layer_to_draw == -1 || self.layer_to_draw == i as i64) && layer.visibility {
+                for tile in layer.tiles.get_data().iter().filter(|t| t.is_some()) {
+                    match tile {
+                        None => (),
+                        Some(tile) => {
+                            let tmp_pos = Vec2::new(params.position.x + tile.position_x, params.position.y + tile.position_y);
+                            if self.is_inside_viewport(&tmp_pos) || draw_everything(&self.viewport) {
+                                self.texture.draw(ctx, DrawParams::new()
+                                    .position(tmp_pos)
+                                    .clip(self.tile_rectangles[&tile.id])
+                                    .rotation(tile.rotation)
+                                    .scale(tile.scale)
+                                    .color(layer.color)
+                                );
+                            }
+                        }
                     }
                 }
             }
@@ -217,6 +209,8 @@ impl Drawable for Tilemap {
 }
 
 pub struct Tilemap {
+    width: usize,
+    height: usize,
     viewport: Rectangle,
     tile_height: i64,
     tile_width: i64,
@@ -227,12 +221,13 @@ pub struct Tilemap {
 }
 
 pub struct Layer {
-    tiles: Vec<Tile>,
+    tiles: VecGrid<Tile>,
     name: String,
     visibility: bool,
     color: Color,
 }
 
+#[allow(dead_code)]
 pub struct Tile {
     id: u32,
     x: i64,
@@ -260,75 +255,77 @@ fn get_tile_rectangles(texture_height: i32, texture_width: i32, tile_width: i64,
 
 fn transform_pyxeltilemap(texture: Texture, pyxeltilemap: PyxelTilemap) ->Tilemap{
     Tilemap{
-        viewport: Rectangle::new(0.0, 0.0,100.0,100.0),
+        width: pyxeltilemap.tileswide as usize,
+        height: pyxeltilemap.tileshigh as usize,
+        viewport: DEFAULT_RECTANGLE,
         tile_height: pyxeltilemap.tile_height,
         tile_width: pyxeltilemap.tile_width,
-        layers: transform_pyxellayer(&pyxeltilemap.layers),
+        layers: transform_pyxellayer(&pyxeltilemap.layers, pyxeltilemap.tileswide as usize, pyxeltilemap.tileshigh as usize),
         tile_rectangles: get_tile_rectangles(texture.width(), texture.height(), pyxeltilemap.tile_width, pyxeltilemap.tile_height),
         texture,
-        layer_to_draw: -1,
+        layer_to_draw: DEFAULT_LAYER_TO_DRAW,
     }
 }
 
-fn transform_pyxellayer(pyxellayers: &Vec<pyxeledit::Layers>) ->Vec<Layer>{
+fn transform_pyxellayer(pyxellayers: &Vec<pyxeledit::Layers>, width: usize, height: usize) ->Vec<Layer>{
     let mut layers: Vec<Layer> = Vec::new();
     for pyxellayer in pyxellayers.iter().rev(){
         let l = Layer{
-            tiles: transform_pyxeltile(&pyxellayer.tiles),
+            tiles: transform_pyxeltile(&pyxellayer.tiles, width, height),
             name: pyxellayer.name.clone(),
-            visibility: true,
-            color: Color::rgb(1.0, 1.0, 1.0),
+            ..Layer::default()
         };
         layers.push(l);
     }
     layers
 }
 
-fn transform_pyxeltile(pyxeltiles: &Vec<pyxeledit::Tile>) -> Vec<Tile>{
-    let mut tiles: Vec<Tile> = Vec::new();
+fn transform_pyxeltile(pyxeltiles: &Vec<pyxeledit::Tile>, width: usize, height: usize) -> VecGrid<Tile>{
+    let mut vecgrid: VecGrid<Tile> = VecGrid::new(width, height);
     for t in pyxeltiles.iter(){
         let tile = Tile{
-            id: t.id as u32,
-            x: t.x,
-            y: t.y,
-            position_x: t.position_x,
-            position_y: t.position_y,
-            rotation: t.rotation,
-            scale: Vec2::new(t.scale.0,t.scale.1),
+                id: t.id as u32,
+                x: t.x,
+                y: t.y,
+                position_x: t.position_x,
+                position_y: t.position_y,
+                rotation: t.rotation,
+                scale: Vec2::new(t.scale.0,t.scale.1),
         };
-        tiles.push(tile);
+        vecgrid.set(tile, t.x as usize, t.y as usize);
     };
-    tiles
+    vecgrid
 }
 
 fn transform_tiledtilemap(texture: Texture, tiledtilemap: TiledTilemap) ->Tilemap{
     Tilemap{
-        viewport: Rectangle::new(0.0, 0.0,100.0,100.0),
+        width: tiledtilemap.tilewidth,
+        height: tiledtilemap.tileheight,
+        viewport: DEFAULT_RECTANGLE,
         tile_height: tiledtilemap.tile_height,
         tile_width: tiledtilemap.tile_width,
-        layers: transform_tiledlayer(&tiledtilemap.layers),
+        layers: transform_tiledlayer(&tiledtilemap.layers,tiledtilemap.tilewidth,tiledtilemap.tileheight),
         tile_rectangles: get_tile_rectangles(texture.width(), texture.height(), tiledtilemap.tile_width, tiledtilemap.tile_height),
         texture,
-        layer_to_draw: -1,
+        layer_to_draw: DEFAULT_LAYER_TO_DRAW,
     }
 }
 
-fn transform_tiledlayer(tiledlayers: &Vec<tiled::Layer>) ->Vec<Layer>{
+fn transform_tiledlayer(tiledlayers: &Vec<tiled::Layer>, width: usize, height: usize) ->Vec<Layer>{
     let mut layers: Vec<Layer> = Vec::new();
     for tiledlayer in tiledlayers.iter(){
         let l = Layer{
-            tiles: transform_tiledtile(&tiledlayer.tiles),
+            tiles: transform_tiledtile(&tiledlayer.tiles, width, height),
             name: tiledlayer.name.clone(),
-            visibility: true,
-            color: Color::rgb(1.0, 1.0, 1.0),
+            ..Layer::default()
         };
         layers.push(l);
     }
     layers
 }
 
-fn transform_tiledtile(tiledtiles: &Vec<tiled::Tile>) -> Vec<Tile>{
-    let mut tiles: Vec<Tile> = Vec::new();
+fn transform_tiledtile(tiledtiles: &Vec<tiled::Tile>, width: usize, height: usize) -> VecGrid<Tile>{
+    let mut vecgrid: VecGrid<Tile> = VecGrid::new(width, height);
     for t in tiledtiles.iter(){
         let tile = Tile{
             id: t.id,
@@ -339,12 +336,40 @@ fn transform_tiledtile(tiledtiles: &Vec<tiled::Tile>) -> Vec<Tile>{
             rotation: t.rotation,
             scale: Vec2::new(t.scale.0,t.scale.1),
         };
-        tiles.push(tile);
+        vecgrid.set(tile, t.x as usize, t.y as usize);
     };
-    tiles
+    vecgrid
 }
 
 fn draw_everything(rectangle: &Rectangle) -> bool{
-    let rectangle_to_compare = Rectangle::new(0.0,0.0,0.0,0.0);
+    let rectangle_to_compare = DEFAULT_RECTANGLE;
     rectangle_to_compare.eq(rectangle)
 }
+
+impl Default for Layer {
+    fn default() -> Layer {
+        Layer{
+            tiles: VecGrid::new(1,1),
+            name: "".to_string(),
+            visibility: true,
+            color: Color::rgb(1.0, 1.0, 1.0),
+        }
+    }
+}
+
+impl Default for Tile {
+    fn default() -> Tile {
+        Tile{
+            id: 0,
+            x: 0,
+            y: 0,
+            position_x: 0.0,
+            position_y: 0.0,
+            rotation: 0.0,
+            scale: Vec2::new(1.0, 1.0),
+        }
+    }
+}
+
+const DEFAULT_RECTANGLE: Rectangle = Rectangle{ x: 0.0, y: 0.0, width: 0.0, height: 0.0 };
+const DEFAULT_LAYER_TO_DRAW: i64 = -1;

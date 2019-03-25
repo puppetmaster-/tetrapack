@@ -23,14 +23,15 @@ impl TiledTilemap {
     }
 }
 
-
 pub struct TiledTilemap{
+    pub tilewidth: usize,
+    pub tileheight: usize,
     pub tile_height: i64,
     pub tile_width: i64,
     pub layers: Vec<Layer>,
     //pub objects: Vec<Object>,
 }
-
+#[allow(dead_code)]
 pub struct Layer{
     pub id: i32,
     pub name: String,
@@ -201,6 +202,8 @@ fn remodel_tmx(tilemap: &mut TmxTilemap) -> TiledTilemap{
         });
     }
     TiledTilemap{
+        tileheight: tilemap.height as usize,
+        tilewidth: tilemap.width as usize,
         tile_height,
         tile_width,
         layers,
@@ -226,6 +229,8 @@ fn remodel_json(tilemap: &mut JsonTilemap) -> TiledTilemap{
     }
 
     TiledTilemap{
+        tileheight: tilemap.height as usize,
+        tilewidth: tilemap.width as usize,
         tile_height,
         tile_width,
         layers

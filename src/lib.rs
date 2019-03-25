@@ -15,3 +15,4 @@ pub mod tilemap;
 pub mod camera;
 mod pyxeledit;
 mod tiled;
+mod vecgrid;
