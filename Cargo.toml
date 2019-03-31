@@ -15,7 +15,7 @@ crate-type = ["lib"]
 path = "src/lib.rs"
 
 [dependencies]
-# tetra = { git = "https://github.com/17cupsofcoffee/tetra"}
+#tetra = { git = "https://github.com/17cupsofcoffee/tetra"}
 tetra = "0.2"
 
 # logging
@@ -30,3 +30,6 @@ serde-xml-rs = "0.3"
 # randomize
 rand = "0.6"
 rand_core = "0.2.2"
+
+# nalgebra
+glm = { version = "0.2.0", package = "nalgebra-glm" }
