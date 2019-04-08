@@ -7,18 +7,19 @@ pub struct Mouse{
 }
 
 impl Mouse{
-	pub fn new(texture: Texture) -> Self{
-		Mouse{
+	pub fn new(ctx: &mut Context) -> tetra::Result<Mouse>{
+		let texture = Texture::from_file_data(ctx, include_bytes!("../../resources/cursor.png"))?;
+		Ok(Mouse{
 			texture,
 			visible: true,
-		}
+		})
 	}
 
-	pub fn visible(&mut self, visible: bool){
+	pub fn set_visible(&mut self, visible: bool){
 		self.visible = visible;
 	}
 
-	pub fn texture(&mut self, texture: Texture){
+	pub fn set_texture(&mut self, texture: Texture){
 		self.texture = texture;
 	}
 }
