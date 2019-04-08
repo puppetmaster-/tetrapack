@@ -32,12 +32,12 @@ impl Camera{
                 if self.offset != self.new_offset {
                     if self.offset.x < self.new_offset.x {
                         x = 1.0;
-                    }if self.offset.x > self.new_offset.x {
+                    }else if self.offset.x > self.new_offset.x {
                         x = -1.0;
                     }
                     if self.offset.y < self.new_offset.y {
                         y = 1.0;
-                    }if self.offset.y > self.new_offset.y {
+                    }else if self.offset.y > self.new_offset.y {
                         y = -1.0;
                     }
                     self.offset += Vec2::new(x,y);
@@ -52,11 +52,10 @@ impl Camera{
             if dif.x > self.save_zone.x || dif.x < -self.save_zone.x || dif.y > self.save_zone.y || dif.y < -self.save_zone.y{
                 self.new_offset = position;
             }
-            return self;
         }else{
             self.offset = position;
-            return self;
         }
+        self
     }
 }
 

@@ -4,8 +4,6 @@ extern crate serde_xml_rs;
 extern crate serde_json;
 extern crate rand;
 
-extern crate glm;
-
 #[macro_use]
 extern crate log;
 
@@ -15,8 +13,7 @@ pub mod fps;
 //pub mod particle;
 pub mod tilemap;
 pub mod camera;
-pub mod button;
-pub mod mouse;
+pub mod gui;
 mod pyxeledit;
 mod tiled;
 mod vecgrid;

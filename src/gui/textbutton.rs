@@ -1,9 +1,9 @@
 use tetra::graphics::{Drawable, Color, DrawParams, Vec2, Text, Rectangle, Font};
 use tetra::input::{self, MouseButton};
-use tetra::{Context};
+use tetra::{Context, glm};
 
-pub struct Button{
-	id: u8,
+#[allow(dead_code)]
+pub struct TextButton{
 	pressed: bool,
 	centered: bool,
 	visible: bool,
@@ -15,18 +15,17 @@ pub struct Button{
 	position: Vec2
 }
 
-impl Button{
-	pub fn new(id: u8, text: &str, position: Vec2) -> Self {
+impl TextButton{
+	pub fn new(text: &str, position: Vec2) -> Self {
 		let text = Text::new(text, Font::default(), 12.0);
-		Button{
-			id,
+		TextButton{
 			pressed: false,
 			centered: true,
 			visible: true,
 			color: Color::rgb(1.0,1.0,1.0),
 			normal_color: Color::rgb(1.0,1.0,1.0),
 			hover_color: Color::rgb(1.0, 0.0, 0.0),
-			pressed_color: Color::rgb(0.0, 1.0, 0.0),
+			pressed_color: Color::rgb(0.0, 0.8, 0.0),
 			text,
 			position,
 		}
@@ -68,7 +67,7 @@ impl Button{
 	}
 
 	//not the best way to do it
-	pub fn is_pressed(&mut self) -> bool{
+	pub fn is_pressed(&self) -> bool{
 		if self.pressed{
 			return true;
 		}
@@ -107,7 +106,7 @@ impl Button{
 
 }
 
-impl Drawable for Button {
+impl Drawable for TextButton {
 	fn draw<P>(&self, ctx: &mut Context, params: P)
 		where
 			P: Into<DrawParams>,

@@ -1,4 +1,4 @@
-#[allow(dead_code)]
+
 use tetra::graphics::{Drawable, DrawParams, Font, Text, Color};
 use tetra::{Context};
 
