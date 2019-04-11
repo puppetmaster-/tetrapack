@@ -66,7 +66,7 @@ impl Tilemap{
 
     /// just a map with tile ids
     /// neither rotation nor flipping
-    pub fn set_tiles_from_map(&mut self, layer: usize, list: &Vec<Vec<u32>>){
+    pub fn set_tiles_from_map(&mut self, layer: usize, list: &[Vec<u32>]){
         let tiles = self.create_tiles_from_map(list);
         match  self.layers.get_mut(layer){
             None => self.add_layer(tiles),
@@ -74,7 +74,7 @@ impl Tilemap{
         }
     }
 
-    fn create_tiles_from_map(&mut self, list: &Vec<Vec<u32>>)->VecGrid<Tile>{
+    fn create_tiles_from_map(&mut self, list: &[Vec<u32>])->VecGrid<Tile>{
         let mut tiles = VecGrid::new(list.len(), list[0].len());
         for (x,row) in list.iter().enumerate() {
             for (y,id) in row.iter().enumerate(){
@@ -243,8 +243,8 @@ pub struct Tile {
 fn get_tile_rectangles(texture_height: i32, texture_width: i32, tile_width: i64, tile_height: i64) ->HashMap<u32, Rectangle>{
     let mut id = 0;
     let mut tile_rectangles: HashMap<u32, Rectangle> = HashMap::new();
-    let x = texture_width as i64 / tile_width;
-    let y = texture_height as i64 / tile_height;
+    let x = i64::from(texture_width) / tile_width;
+    let y = i64::from(texture_height) / tile_height;
     for i in 0..x{
         for j in 0..y{
             let rec = Rectangle::new((j*tile_width) as f32,(i*tile_height) as f32, tile_width as f32, tile_height as f32); //switch x and y axis
@@ -269,7 +269,7 @@ fn transform_pyxeltilemap(texture: Texture, pyxeltilemap: PyxelTilemap) ->Tilema
     }
 }
 
-fn transform_pyxellayer(pyxellayers: &Vec<pyxeledit::Layers>, width: usize, height: usize) ->Vec<Layer>{
+fn transform_pyxellayer(pyxellayers: &[pyxeledit::Layers], width: usize, height: usize) ->Vec<Layer>{
     let mut layers: Vec<Layer> = Vec::new();
     for pyxellayer in pyxellayers.iter().rev(){
         let l = Layer{
@@ -282,7 +282,7 @@ fn transform_pyxellayer(pyxellayers: &Vec<pyxeledit::Layers>, width: usize, heig
     layers
 }
 
-fn transform_pyxeltile(pyxeltiles: &Vec<pyxeledit::Tile>, width: usize, height: usize) -> VecGrid<Tile>{
+fn transform_pyxeltile(pyxeltiles: &[pyxeledit::Tile], width: usize, height: usize) -> VecGrid<Tile>{
     let mut vecgrid: VecGrid<Tile> = VecGrid::new(width, height);
     for t in pyxeltiles.iter(){
         let tile = Tile{
@@ -313,7 +313,7 @@ fn transform_tiledtilemap(texture: Texture, tiledtilemap: TiledTilemap) ->Tilema
     }
 }
 
-fn transform_tiledlayer(tiledlayers: &Vec<tiled::Layer>, width: usize, height: usize) ->Vec<Layer>{
+fn transform_tiledlayer(tiledlayers: &[tiled::Layer], width: usize, height: usize) ->Vec<Layer>{
     let mut layers: Vec<Layer> = Vec::new();
     for tiledlayer in tiledlayers.iter(){
         let l = Layer{
@@ -326,7 +326,7 @@ fn transform_tiledlayer(tiledlayers: &Vec<tiled::Layer>, width: usize, height: u
     layers
 }
 
-fn transform_tiledtile(tiledtiles: &Vec<tiled::Tile>, width: usize, height: usize) -> VecGrid<Tile>{
+fn transform_tiledtile(tiledtiles: &[tiled::Tile], width: usize, height: usize) -> VecGrid<Tile>{
     let mut vecgrid: VecGrid<Tile> = VecGrid::new(width, height);
     for t in tiledtiles.iter(){
         let tile = Tile{
