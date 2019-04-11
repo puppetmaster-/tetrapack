@@ -1,3 +1,5 @@
+use log::{info, debug};
+use serde::Deserialize;
 
 impl PyxelTilemap {
     pub fn new(data: &str) -> PyxelTilemap{

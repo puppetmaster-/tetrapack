@@ -3,6 +3,8 @@ use tetra::graphics::{DrawParams, Drawable, Rectangle, Texture, Color};
 use tetra::glm::Vec2;
 use tetra::{Context};
 
+use log::{info, error, debug};
+
 use std::collections::{HashMap};
 use crate::pyxeledit;
 use crate::tiled;
