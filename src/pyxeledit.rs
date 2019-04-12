@@ -1,3 +1,5 @@
+use log::{info, debug};
+use serde::Deserialize;
 
 impl PyxelTilemap {
     pub fn new(data: &str) -> PyxelTilemap{
@@ -92,15 +94,13 @@ fn remodel(tilemap: &mut PyxelTilemap){
                 }else if tile.rotation_id == 2{
                     shift_y = tile_height;
                 }
-            }else{
-                if tile.rotation_id == 1{
-                    shift_x = tile_width;
-                }else if tile.rotation_id == 2{
-                    shift_x = tile_width;
-                    shift_y = tile_height;
-                }else if tile.rotation_id == 3{
-                    shift_y = tile_height;
-                }
+            } else if tile.rotation_id == 1{
+                shift_x = tile_width;
+            } else if tile.rotation_id == 2{
+                shift_x = tile_width;
+                shift_y = tile_height;
+            } else if tile.rotation_id == 3{
+                shift_y = tile_height;
             }
             tile.position_x = (tile.x * tilemap.tile_width + shift_x) as f32;
             tile.position_y = (tile.y * tilemap.tile_height + shift_y) as f32;

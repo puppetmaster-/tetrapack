@@ -1,4 +1,5 @@
-
+use log::info;
+use serde::Deserialize;
 
 const FLIP_HOR_VER_DIA_14_FLAG: u32 = 14;
 const FLIP_HOR_VER_12_FLAG: u32 = 12;
@@ -190,7 +191,7 @@ fn remodel_tmx(tilemap: &mut TmxTilemap) -> TiledTilemap{
 
     for l in tilemap.layers.iter(){
         let data = l.data.tile_data.replace("\r\n","");
-        let nums = data.split(",").map(|s| s.parse::<u32>().unwrap()).collect::<Vec<_>>();
+        let nums = data.split(',').map(|s| s.parse::<u32>().unwrap()).collect::<Vec<_>>();
         let firstgid = tilemap.tilesets.get(0).unwrap().firstgid;
         layers.push(Layer{
             id: l.id,
@@ -237,7 +238,7 @@ fn remodel_json(tilemap: &mut JsonTilemap) -> TiledTilemap{
     }
 }
 
-fn creates_tiles(nums: &Vec<u32>,width: i64,tile_width: i64, tile_height: i64, firstgid: u32) -> Vec<Tile>{
+fn creates_tiles(nums: &[u32],width: i64,tile_width: i64, tile_height: i64, firstgid: u32) -> Vec<Tile>{
     let mut tiles = vec![];
     let mut y = -1;
     for (i,id) in nums.iter().enumerate(){
