@@ -31,20 +31,24 @@ impl Button{
 			visible: true,
 			disabled: false,
 			state: ButtonState::Normal,
-			text: Text::new("Ög", Font::default(), 18.0),
+			text: Text::new("OK", Font::default(), 18.0),
 			text_colors: get_text_colors(),
 			text_frame_size: 10.0,
 			panel,
 		})
 	}
 
-	pub fn text(mut self, text: &str) -> Self{
+	pub fn content(mut self, text: &str) -> Self{
 		self.text.set_content(text);
 		self
 	}
 
-	pub fn set_text(&mut self, text: &str){
+	pub fn set_content(&mut self, text: &str){
 		self.text.set_content(text);
+	}
+
+	pub fn get_mut_text(&mut self) -> &mut Text{
+		&mut self.text
 	}
 
 	pub fn position(mut self, position: Vec2) -> Self{
@@ -69,6 +73,10 @@ impl Button{
 	pub fn texture(mut self, state: ButtonState, texture: Texture) -> Self{
 		self.textures.entry(state).or_insert(texture);
 		self
+	}
+
+	pub fn set_bounds(&mut self, bounds: Rectangle){
+		self.panel.set_fill_rect(bounds);
 	}
 
 	//not the best way to do it
@@ -108,14 +116,12 @@ impl Button{
 					self.state = ButtonState::Pressed;
 				}else{
 					self.state = ButtonState::Hover;
-					self.text.set_content("OK");
 				}
 				if input::is_mouse_button_released(ctx, MouseButton::Left){
 					self.pressed = true;
 				}
 			}else{
 				self.state = ButtonState::Normal;
-				self.text.set_content("Ög");
 			}
 			self.panel.set_texture(self.textures[&self.state].clone());
 		}
@@ -123,21 +129,20 @@ impl Button{
 }
 
 impl Drawable for Button {
-	fn draw<P>(&self, ctx: &mut Context, params: P)
+	fn draw<P>(&self, ctx: &mut Context, _params: P)
 		where
 			P: Into<DrawParams>,
 	{
 		if self.visible{
-			let mut params = params.into();
-
-			params.position = self.position;
+			//let mut params = params.into();
+			//params.position = self.position;
 
 			self.panel.draw(ctx, self.position);
 			let bounds = self.text.get_bounds(ctx).unwrap();
 			self.text.draw(ctx, DrawParams::new()
 				.color(self.text_colors[&self.state])
 				.position(Vec2::new(self.position.x + self.panel.width() / 2.0, self.position.y + self.panel.height() / 2.0))
-				.origin(Vec2::new(bounds.width / 2.0, bounds.height / 2.0))
+				.origin(Vec2::new(bounds.width / 2.0 + bounds.x, bounds.height / 2.0 + bounds.y))
 			);
 		}
 	}
