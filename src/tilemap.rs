@@ -125,7 +125,7 @@ impl Tilemap{
         };
     }
 
-    fn is_inside_viewport(&self, position: &Vec2) -> bool{
+    fn is_inside_viewport(&self, position: Vec2) -> bool{
         !(position.x < self.viewport.x ||
             position.y < self.viewport.y ||
             position.x > self.viewport.x + self.viewport.width ||
@@ -193,7 +193,7 @@ impl Drawable for Tilemap {
                         None => (),
                         Some(tile) => {
                             let tmp_pos = Vec2::new(params.position.x + tile.position_x, params.position.y + tile.position_y);
-                            if self.is_inside_viewport(&tmp_pos) || draw_everything(&self.viewport) {
+                            if self.is_inside_viewport(tmp_pos) || draw_everything(&self.viewport) {
                                 self.texture.draw(ctx, DrawParams::new()
                                     .position(tmp_pos)
                                     .clip(self.tile_rectangles[&tile.id])
@@ -210,6 +210,7 @@ impl Drawable for Tilemap {
     }
 }
 
+#[allow(dead_code)]
 pub struct Tilemap {
     width: usize,
     height: usize,

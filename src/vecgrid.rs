@@ -21,11 +21,11 @@ impl<T> VecGrid<T> {
     }
 
     pub fn get(&self, x: usize, y: usize) -> Option<&T> {
-        self.data.get(x + (y* self.width)).and_then(|x| x.as_ref())
+        self.data.get(x + (y* self.width)).and_then(std::option::Option::as_ref)
     }
 
     pub fn get_mut(&mut self, x: usize, y: usize) -> Option<&mut T> {
-        self.data.get_mut(x + (y * self.width)).and_then(|x| x.as_mut())
+        self.data.get_mut(x + (y * self.width)).and_then(std::option::Option::as_mut)
     }
 
     pub fn set(&mut self, cell: T, x: usize, y: usize){

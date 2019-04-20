@@ -51,6 +51,7 @@ pub struct Tile {
     pub scale: (f32,f32),
 }
 
+#[allow(clippy::approx_constant)]
 fn pyxel_rotation(rotation: i8) ->f32{
     let rot = rotation;
     let mut return_value = 0.0;

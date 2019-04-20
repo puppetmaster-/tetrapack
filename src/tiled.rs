@@ -8,7 +8,7 @@ const FLIP_HOR_8_FLAG: u32 = 8;
 const FLIP_VER_DIA_6_FLAG: u32 = 6;
 const FLIP_VER_4_FLAG: u32   = 4;
 const FLIP_DIA_2_FLAG: u32   = 2;
-const ALL_FLIP_FLAGS: u32 = 0x80000000 | 0x40000000 | 0x20000000;
+const ALL_FLIP_FLAGS: u32 = 0x8000_0000 | 0x4000_0000 | 0x2000_0000;
 
 impl TiledTilemap {
     pub fn new(data: &str) -> TiledTilemap{
@@ -192,7 +192,7 @@ fn remodel_tmx(tilemap: &mut TmxTilemap) -> TiledTilemap{
     for l in tilemap.layers.iter(){
         let data = l.data.tile_data.replace("\r\n","");
         let nums = data.split(',').map(|s| s.parse::<u32>().unwrap()).collect::<Vec<_>>();
-        let firstgid = tilemap.tilesets.get(0).unwrap().firstgid;
+        let firstgid = tilemap.tilesets[0].firstgid;
         layers.push(Layer{
             id: l.id,
             name: l.name.clone(),
@@ -217,7 +217,7 @@ fn remodel_json(tilemap: &mut JsonTilemap) -> TiledTilemap{
     let tile_width = tilemap.tile_width;
     for l in tilemap.layers.iter(){
         if l.layer_type.contains("tilelayer"){
-            let firstgid = tilemap.tilesets.get(0).unwrap().firstgid;
+            let firstgid = tilemap.tilesets[0].firstgid;
             layers.push(Layer {
                 id: l.id,
                 name: l.name.clone(),
@@ -238,6 +238,7 @@ fn remodel_json(tilemap: &mut JsonTilemap) -> TiledTilemap{
     }
 }
 
+#[allow(clippy::approx_constant)]
 fn creates_tiles(nums: &[u32],width: i64,tile_width: i64, tile_height: i64, firstgid: u32) -> Vec<Tile>{
     let mut tiles = vec![];
     let mut y = -1;
