@@ -1,14 +1,19 @@
-use tetra::graphics::{Drawable, DrawParams, Vec2, Rectangle, Texture, Color, Text, Font, NineSlice};
+use tetra::graphics::{Drawable, DrawParams, Rectangle, Texture, Color};
 use tetra::input::{self, MouseButton};
-use tetra::{Context, glm};
+use tetra::{Context};
 use std::collections::hash_map::HashMap;
+use tetra::graphics::ui::NineSlice;
+use tetra::math::Vec2;
+use crate::TetraVec2;
+use tetra::graphics::text::{Text, Font};
 
 #[allow(dead_code)]
 pub struct Button{
 	pressed: bool,
 	visible: bool,
 	disabled: bool,
-	position: Vec2,
+	centered: bool,
+	position: TetraVec2,
 	state: ButtonState,
 	text: Text,
 	text_frame_size: f32,
@@ -18,9 +23,9 @@ pub struct Button{
 }
 
 impl Button{
-	pub fn new(ctx: &mut Context, position: Vec2) -> tetra::Result<Button> {
-		let width = 50.0;
-		let height = 20.0;
+	pub fn new(ctx: &mut Context, position: TetraVec2) -> tetra::Result<Button> {
+		let width = 55.0;
+		let height = 25.0;
 		let textures = get_textures(ctx)?;
 		let panel = NineSlice::new(textures[&ButtonState::Normal].clone(),width,height,Rectangle::new(5.0,5.0,6.0,6.0));
 
@@ -30,8 +35,12 @@ impl Button{
 			pressed: false,
 			visible: true,
 			disabled: false,
+			centered: true,
 			state: ButtonState::Normal,
-			text: Text::new("OK", Font::default(), 18.0),
+			text: Text::new(
+				"OK",
+				Font::vector(ctx,"../../resources/DejaVuSansMono.ttf",18.0)?,
+			),
 			text_colors: get_text_colors(),
 			text_frame_size: 10.0,
 			panel,
@@ -51,12 +60,12 @@ impl Button{
 		&mut self.text
 	}
 
-	pub fn position(mut self, position: Vec2) -> Self{
+	pub fn position(mut self, position: Vec2<f32>) -> Self{
 		self.position = position;
 		self
 	}
 
-	pub fn set_position(&mut self, position: Vec2){
+	pub fn set_position(&mut self, position: Vec2<f32>){
 		self.position = position;
 	}
 
@@ -99,7 +108,7 @@ impl Button{
 
 	pub fn update(&mut self, ctx: &mut Context){
 		if self.visible && !self.disabled{
-			let mouse_position = glm::round(&input::get_mouse_position(ctx));
+			let mouse_position = &input::get_mouse_position(ctx).round();
 
 			let text_bounds = self.text.get_bounds(ctx).unwrap();
 			if self.panel.width() < text_bounds.width+self.text_frame_size{
@@ -111,7 +120,7 @@ impl Button{
 
 			let bounds = Rectangle::new(0.0,0.0, self.panel.width(), self.panel.height());
 
-			if is_inside_hover_area(self.position, bounds, mouse_position) {
+			if is_inside_hover_area(self.centered, self.position, bounds, *mouse_position) {
 				if input::is_mouse_button_down(ctx, MouseButton::Left){
 					self.state = ButtonState::Pressed;
 				}else{
@@ -134,23 +143,29 @@ impl Drawable for Button {
 			P: Into<DrawParams>,
 	{
 		if self.visible{
-			//let mut params = params.into();
-			//params.position = self.position;
+			let mut position_tmp = self.position;
+			if self.centered{
+				position_tmp -= Vec2::new(self.panel.width() / 2.0, self.panel.height() / 2.0).round();
+			}
 
-			self.panel.draw(ctx, self.position);
+			self.panel.draw(ctx, position_tmp);
 			let bounds = self.text.get_bounds(ctx).unwrap();
 			self.text.draw(ctx, DrawParams::new()
 				.color(self.text_colors[&self.state])
-				.position(Vec2::new(self.position.x + self.panel.width() / 2.0, self.position.y + self.panel.height() / 2.0))
+				.position(Vec2::new(position_tmp.x + self.panel.width() / 2.0, position_tmp.y + self.panel.height() / 2.0))
 				.origin(Vec2::new(bounds.width / 2.0 + bounds.x, bounds.height / 2.0 + bounds.y))
 			);
 		}
 	}
 }
 
-fn is_inside_hover_area(draw_position: Vec2, area: Rectangle, position: Vec2) -> bool{
-	let pos_x = draw_position.x;
-	let pos_y = draw_position.y;
+fn is_inside_hover_area(centered: bool, draw_position: TetraVec2, area: Rectangle, position: TetraVec2) -> bool{
+	let mut pos_x = draw_position.x;
+	let mut pos_y = draw_position.y;
+	if centered {
+		pos_x -= area.width / 2.0;
+		pos_y -= area.height / 2.0;
+	}
 	!(position.x < area.x + pos_x ||
 		position.y < area.y + pos_y ||
 		position.x > area.x + pos_x + area.width ||

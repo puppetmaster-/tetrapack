@@ -1,8 +1,15 @@
-pub mod fps;
-//pub mod particle;
+
 pub mod tilemap;
-pub mod camera;
+pub mod scenes;
+pub mod config;
+pub mod animation;
+pub mod input_action;
 pub mod gui;
-mod pyxeledit;
-mod tiled;
-mod vecgrid;
+pub mod utils;
+
+// experimental pack
+mod experimental;
+
+// custom types
+pub type TetraVec2 = tetra::math::Vec2<f32>;
+

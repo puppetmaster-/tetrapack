@@ -1,0 +1,15 @@
+(
+	titel: "Shoot out your life",
+	clear_color: (r:0.122,g:0.055,b:0.11,a:1.0),
+	window_width: 240,
+    window_height: 460,
+	window_scale: 2,
+	maximized: false,
+	fullscreen: false,
+	resizable: false,
+	scaling: ShowAllPixelPerfect,
+	show_mouse: true,
+	vsync: false,
+	quit_on_escape: false,
+	master_volume: 2.0,
+)

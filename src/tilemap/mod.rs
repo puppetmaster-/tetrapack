@@ -1,23 +1,22 @@
+pub mod pyxeledit;
+pub mod tiled;
 
-use tetra::graphics::{DrawParams, Drawable, Rectangle, Texture, Color};
-use tetra::glm::Vec2;
-use tetra::{Context};
+use std::collections::HashMap;
+use log::{info,debug,error};
 
-use log::{info, error, debug};
-
-use std::collections::{HashMap};
-use crate::pyxeledit;
-use crate::tiled;
-
-use pyxeledit::PyxelTilemap;
-use tiled::TiledTilemap;
-use crate::vecgrid::VecGrid;
+use tetra::graphics::{Texture, Color, Rectangle, Drawable, DrawParams};
+use tetra::Context;
+use tetra::math::Vec2;
+use crate::tilemap::pyxeledit::PyxelTilemap;
+use crate::tilemap::tiled::TiledTilemap;
+use crate::TetraVec2;
+use crate::utils::vecgrid::VecGrid;
 
 #[allow(dead_code)]
 impl Tilemap{
     /// create empty tilemap
     /// use add_tiles_from_map or set_tiles to fill
-    pub fn new(texture: Texture,tile_width: i64, tile_height: i64, width: usize, height: usize) -> Tilemap{
+    pub fn new(texture: Texture,clip: Rectangle, tile_width: i64, tile_height: i64, width: usize, height: usize) -> Tilemap{
         info!("create empty tilemap");
         Tilemap{
             width,
@@ -26,20 +25,28 @@ impl Tilemap{
             tile_height,
             tile_width,
             layers: vec![Layer {tiles: VecGrid::new(width, height),..Layer::default()}],
-            tile_rectangles: get_tile_rectangles(texture.width(), texture.height(), tile_width, tile_height),
+            tile_rectangles: get_tile_rectangles(clip, tile_width, tile_height),
             texture,
             layer_to_draw: DEFAULT_LAYER_TO_DRAW,
         }
     }
 
-    pub fn from_pyxeledit(texture: Texture, data: &str) -> Tilemap{
+    pub fn from_pyxeledit(texture: Texture, clip: Rectangle, data: &str) -> Tilemap{
         let pyxeltilemap = PyxelTilemap::new(data);
-        transform_pyxeltilemap(texture, pyxeltilemap)
+        transform_pyxeltilemap(texture, clip, pyxeltilemap)
     }
 
-    pub fn from_tiled(texture: Texture, data: &str) -> Tilemap{
+    /*
+    pub fn from_pyxeledit_file(ctx: &mut Context, data: &str) -> Tilemap{
+        let doc = pyxel::load_from_memory(include_bytes!(data))?;
+        let texture = Texture::from_rgba(ctx, doc.tileset().tiles_wide(),doc.tileset().image_data())
+        let pyxeltilemap = PyxelTilemap::new(data);
+        transform_pyxeltilemap(texture, pyxeltilemap)
+    }*/
+
+    pub fn from_tiled(texture: Texture,clip: Rectangle, data: &str) -> Tilemap{
         let tiledtilemap = TiledTilemap::new(data);
-        transform_tiledtilemap(texture, tiledtilemap)
+        transform_tiledtilemap(texture, clip, tiledtilemap)
     }
 
     pub fn color(&mut self, color: Color) ->&Tilemap{
@@ -74,6 +81,103 @@ impl Tilemap{
         }
     }
 
+    pub fn viewport(&mut self, rectangle: Rectangle) -> &Tilemap{
+        self.viewport = rectangle;
+        self
+    }
+
+    pub fn set_tileid_at(&mut self, layer: usize, new_id: u32, position: TetraVec2){
+        let x = (position.x as i64 / self.tile_width) as usize;
+        let y = (position.y as i64 / self.tile_height) as usize;
+        match self.layers.get_mut(layer){
+            None => error!("layer{} not found!", layer),
+            Some(layer) => {
+                match layer.tiles.get_mut(x, y){
+                    None => layer.tiles.set(Tile{
+                            id: new_id,
+                            x: x as i64,
+                            y: y as i64,
+                            position_x: (x as i64 * self.tile_width) as f32,
+                            position_y: (y as i64 * self.tile_height) as f32,
+                            ..Tile::default()
+                        }, x, y),
+                    Some(tile) => tile.id = new_id,
+                };
+            },
+        };
+    }
+
+    pub fn draw_layer(&mut self, layer_to_draw: i64) ->&Tilemap{
+        self.layer_to_draw = layer_to_draw;
+        self
+    }
+
+    pub fn visibility(&mut self, layer: usize, visibility: bool){
+        match self.layers.get_mut(layer){
+            Some(mut l) => {l.visibility = visibility},
+            None => ()
+        }
+    }
+
+    pub fn get_layer_id(&self, name: &str) ->usize{
+        for (i, layer) in self.layers.iter().enumerate(){
+            if layer.name.eq(name){
+                return i;
+            }
+        }
+        return 99;
+    }
+
+    pub fn get_layer_name(&self, layer: usize) ->&str{
+        match self.layers.get(layer as usize){
+            None => "",
+            Some(layer) => &layer.name,
+        }
+    }
+
+    pub fn get_id_at_position(&self, layer: usize, position: TetraVec2) -> i32{
+        let x = position.x as i64 / self.tile_width;
+        let y = position.y as i64 / self.tile_height;
+        self.get_id_at(layer, x as usize, y as usize)
+    }
+
+    pub fn get_id_at(&self, layer_nr: usize, x: usize,y: usize) -> i32{
+        match self.layers.get(layer_nr) {
+            None => {
+                debug!("no layer!");
+                -1
+            },
+            Some(layer) => {
+                match layer.tiles.get(x,y){
+                    None => {
+                        debug!("layer[{}] {}, no tile at {},{}!",layer_nr, layer.name, x,y);
+                        -1
+                    },
+                    Some(tile) => tile.id as i32
+                }
+            },
+        }
+    }
+
+    fn is_inside_viewport(&self, position: TetraVec2) -> bool{
+        !(position.x < self.viewport.x ||
+            position.y < self.viewport.y ||
+            position.x > self.viewport.x + self.viewport.width ||
+            position.y > self.viewport.y + self.viewport.height
+        )
+    }
+    pub fn get_clip_from_id(&self, id: u32) -> Rectangle{
+        self.tile_rectangles[&id]
+    }
+
+    pub fn get_frames_from_ids(&self, ids: Vec<usize>) -> Vec<Rectangle>{
+        let mut frames = Vec::with_capacity(ids.len());
+        for id in ids{
+            frames.push(self.tile_rectangles[&(id as u32)]);
+        }
+        frames
+    }
+
     fn create_tiles_from_map(&mut self, list: &[Vec<u32>])->VecGrid<Tile>{
         let mut tiles = VecGrid::new(list.len(), list[0].len());
         for (x,row) in list.iter().enumerate() {
@@ -97,86 +201,6 @@ impl Tilemap{
             ..Layer::default()
         };
         self.layers.push(layer);
-    }
-
-    pub fn viewport(&mut self, rectangle: Rectangle) -> &Tilemap{
-        self.viewport = rectangle;
-        self
-    }
-
-    pub fn set_tileid_at(&mut self, layer: usize, new_id: u32, position: Vec2){
-        let x = (position.x as i64 / self.tile_width) as usize;
-        let y = (position.y as i64 / self.tile_height) as usize;
-        match self.layers.get_mut(layer){
-            None => error!("layer{} not found!", layer),
-            Some(layer) => {
-                match layer.tiles.get_mut(x, y){
-                    None => layer.tiles.set(Tile{
-                            id: new_id,
-                            x: x as i64,
-                            y: y as i64,
-                            position_x: (x as i64 * self.tile_width) as f32,
-                            position_y: (y as i64 * self.tile_height) as f32,
-                            ..Tile::default()
-                        }, x, y),
-                    Some(tile) => tile.id = new_id,
-                };
-            },
-        };
-    }
-
-    fn is_inside_viewport(&self, position: Vec2) -> bool{
-        !(position.x < self.viewport.x ||
-            position.y < self.viewport.y ||
-            position.x > self.viewport.x + self.viewport.width ||
-            position.y > self.viewport.y + self.viewport.height
-        )
-    }
-
-    pub fn draw_layer(&mut self, layer_to_draw: i64) ->&Tilemap{
-        self.layer_to_draw = layer_to_draw;
-        self
-    }
-
-    pub fn visibility(&mut self, layer: i64, visibility: bool) ->&Tilemap{
-        match self.layers.get_mut(layer as usize){
-            None => self,
-            Some(mut l) => {
-                l.visibility = visibility;
-                self
-            },
-        }
-    }
-
-    pub fn get_layer_name(&self, layer: usize) ->&str{
-        match self.layers.get(layer as usize){
-            None => "",
-            Some(layer) => &layer.name,
-        }
-    }
-
-    pub fn get_id_at_position(&self, layer: usize, position: Vec2) -> i32{
-        let x = position.x as i64 / self.tile_width;
-        let y = position.y as i64 / self.tile_height;
-        self.get_id_at(layer, x as usize, y as usize)
-    }
-
-    pub fn get_id_at(&self, layer_nr: usize, x: usize,y: usize) -> i32{
-        match self.layers.get(layer_nr) {
-            None => {
-                debug!("no layer!");
-                -1
-            },
-            Some(layer) => {
-                match layer.tiles.get(x,y){
-                    None => {
-                        debug!("layer[{}] {}, no tile at {},{}!",layer_nr, layer.name, x,y);
-                        -1
-                    },
-                    Some(tile) => tile.id as i32
-                }
-            },
-        }
     }
 }
 
@@ -219,7 +243,7 @@ pub struct Tilemap {
     tile_width: i64,
     layers: Vec<Layer>,
     tile_rectangles: HashMap<u32, Rectangle>,
-    texture: Texture,
+    pub texture: Texture,
     layer_to_draw: i64,
 }
 
@@ -238,17 +262,17 @@ pub struct Tile {
     position_x: f32,
     position_y: f32,
     rotation: f32,
-    scale: Vec2,
+    scale: TetraVec2,
 }
 
-fn get_tile_rectangles(texture_height: i32, texture_width: i32, tile_width: i64, tile_height: i64) ->HashMap<u32, Rectangle>{
+fn get_tile_rectangles(clip: Rectangle, tile_width: i64, tile_height: i64) ->HashMap<u32, Rectangle>{
     let mut id = 0;
-    let mut tile_rectangles: HashMap<u32, Rectangle> = HashMap::new();
-    let x = i64::from(texture_width) / tile_width;
-    let y = i64::from(texture_height) / tile_height;
+    let x = i64::from(clip.height as i32) / tile_width;
+    let y = i64::from(clip.width as i32) / tile_height;
+    let mut tile_rectangles: HashMap<u32, Rectangle> = HashMap::with_capacity((x * y) as usize);
     for i in 0..x{
         for j in 0..y{
-            let rec = Rectangle::new((j*tile_width) as f32,(i*tile_height) as f32, tile_width as f32, tile_height as f32); //switch x and y axis
+            let rec = Rectangle::new(clip.x +(j*tile_width) as f32,clip.y +(i*tile_height) as f32, tile_width as f32, tile_height as f32); //switch x and y axis
             tile_rectangles.insert(id,rec);
             id +=1;
         }
@@ -256,7 +280,7 @@ fn get_tile_rectangles(texture_height: i32, texture_width: i32, tile_width: i64,
     tile_rectangles
 }
 
-fn transform_pyxeltilemap(texture: Texture, pyxeltilemap: PyxelTilemap) ->Tilemap{
+fn transform_pyxeltilemap(texture: Texture, clip: Rectangle, pyxeltilemap: PyxelTilemap) ->Tilemap{
     Tilemap{
         width: pyxeltilemap.tileswide as usize,
         height: pyxeltilemap.tileshigh as usize,
@@ -264,7 +288,7 @@ fn transform_pyxeltilemap(texture: Texture, pyxeltilemap: PyxelTilemap) ->Tilema
         tile_height: pyxeltilemap.tile_height,
         tile_width: pyxeltilemap.tile_width,
         layers: transform_pyxellayer(&pyxeltilemap.layers, pyxeltilemap.tileswide as usize, pyxeltilemap.tileshigh as usize),
-        tile_rectangles: get_tile_rectangles(texture.width(), texture.height(), pyxeltilemap.tile_width, pyxeltilemap.tile_height),
+        tile_rectangles: get_tile_rectangles(clip, pyxeltilemap.tile_width, pyxeltilemap.tile_height),
         texture,
         layer_to_draw: DEFAULT_LAYER_TO_DRAW,
     }
@@ -300,7 +324,7 @@ fn transform_pyxeltile(pyxeltiles: &[pyxeledit::Tile], width: usize, height: usi
     vecgrid
 }
 
-fn transform_tiledtilemap(texture: Texture, tiledtilemap: TiledTilemap) ->Tilemap{
+fn transform_tiledtilemap(texture: Texture, clip: Rectangle, tiledtilemap: TiledTilemap) ->Tilemap{
     Tilemap{
         width: tiledtilemap.tilewidth,
         height: tiledtilemap.tileheight,
@@ -308,7 +332,7 @@ fn transform_tiledtilemap(texture: Texture, tiledtilemap: TiledTilemap) ->Tilema
         tile_height: tiledtilemap.tile_height,
         tile_width: tiledtilemap.tile_width,
         layers: transform_tiledlayer(&tiledtilemap.layers,tiledtilemap.tilewidth,tiledtilemap.tileheight),
-        tile_rectangles: get_tile_rectangles(texture.width(), texture.height(), tiledtilemap.tile_width, tiledtilemap.tile_height),
+        tile_rectangles: get_tile_rectangles(clip, tiledtilemap.tile_width, tiledtilemap.tile_height),
         texture,
         layer_to_draw: DEFAULT_LAYER_TO_DRAW,
     }

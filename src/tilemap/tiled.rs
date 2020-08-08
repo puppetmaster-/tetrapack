@@ -1,5 +1,5 @@
-use log::info;
-use serde::Deserialize;
+use log::{info};
+use serde::{Deserialize};
 
 const FLIP_HOR_VER_DIA_14_FLAG: u32 = 14;
 const FLIP_HOR_VER_12_FLAG: u32 = 12;

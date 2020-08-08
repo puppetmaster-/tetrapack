@@ -1,5 +1,5 @@
 use tetra::graphics::{Texture, Drawable, DrawParams};
-use tetra::{Context, input, glm};
+use tetra::{Context, input};
 
 pub struct Mouse{
 	texture: Texture,
@@ -31,7 +31,7 @@ impl Drawable for Mouse {
 	{
 		if self.visible{
 			let mut params = params.into();
-			params.position = glm::round(&input::get_mouse_position(ctx));
+			params.position = input::get_mouse_position(ctx).round();
 			self.texture.draw(ctx, params)
 		}
 	}

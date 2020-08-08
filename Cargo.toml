@@ -1,13 +1,12 @@
 [package]
 name= "tetrapack"
 description = "Various small add-ons for the tetra game engine"
-version = "0.1.1"
+version = "0.2.0"
 repository = "https://github.com/puppetmaster-/tetrapack"
-authors = ["puppetmaster <test@xyz.com>"]
+authors = ["puppetmaster <github@puppetmaster.ch>"]
 license = "MIT"
 readme = "README.md"
 edition = '2018'
-publish = false
 
 [lib]
 name = "tetrapack"
@@ -15,12 +14,6 @@ crate-type = ["lib"]
 path = "src/lib.rs"
 
 [dependencies]
-#tetra = { git = "https://github.com/17cupsofcoffee/tetra"}
-tetra = "0.2.15"
-
-# logging
-log = { version = "0.4", features = ["max_level_debug", "release_max_level_warn"] }
-
 # json and xml parsing
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
@@ -31,3 +24,24 @@ serde-xml-rs = "0.3"
 rand = "0.6"
 rand_core = "0.2.2"
 
+[dependencies.tetra]
+#path = "../tetra"
+version = "0.4.0"
+features = ["serde_support"]
+
+[dependencies.keyframe]
+version = "1.0.2"
+
+[dependencies.keyframe_derive]
+version = "1.0.0"
+
+[dependencies.pyxel]
+version = "0.2.2"
+features = ["image"]
+
+[dependencies.log]
+version = "0.4"
+features = ["max_level_debug", "release_max_level_warn"]
+
+[dependencies.ron]
+version = "0.6.0"

@@ -1,12 +1,29 @@
-use log::{info, debug};
-use serde::Deserialize;
+use crate::TetraVec2;
+use std::collections::HashMap;
+use tetra::graphics::Rectangle;
+use log::{info,debug};
+use serde::{Deserialize};
 
+#[allow(dead_code)]
 impl PyxelTilemap {
     pub fn new(data: &str) -> PyxelTilemap{
         info!("create Tilemap from PyxelEdit (json).");
         let mut pyxeltilemap: PyxelTilemap = serde_json::from_str(data).unwrap();
         remodel(&mut pyxeltilemap);
         pyxeltilemap
+    }
+    pub fn get_id_at_position(&self, layer: Layers, position: TetraVec2) -> Option<i32>{
+        let x = position.x as i64 / self.tile_width;
+        let y = position.y as i64 / self.tile_height;
+        let i = (x*y) as usize;
+        match layer.tiles.get(i){
+            Some(tile) => {
+                let id = tile.id as i32;
+                std::thread::spawn(move || drop(layer));
+                Some(id)
+            },
+            _ => None
+        }
     }
 }
 
@@ -73,6 +90,7 @@ fn default_scale() -> (f32,f32){
     (0.0,0.0)
 }
 
+#[allow(dead_code)]
 fn remodel(tilemap: &mut PyxelTilemap){
     debug!("tilemap has {} layers",tilemap.layers.len());
     for (i,layer) in tilemap.layers.iter_mut().enumerate() {
@@ -109,4 +127,20 @@ fn remodel(tilemap: &mut PyxelTilemap){
             tile.scale = scale;
         }
     }
+}
+
+#[allow(dead_code)]
+pub fn get_tile_rectangles(texture_height: i32, texture_width: i32, tile_width: i64, tile_height: i64) ->HashMap<i32, Rectangle>{
+    let mut id = 0;
+    let mut tile_rectangles: HashMap<i32, Rectangle> = HashMap::new();
+    let x = i64::from(texture_width) / tile_width;
+    let y = i64::from(texture_height) / tile_height;
+    for i in 0..x{
+        for j in 0..y{
+            let rec = Rectangle::new((j*tile_width) as f32,(i*tile_height) as f32, tile_width as f32, tile_height as f32); //switch x and y axis
+            tile_rectangles.insert(id,rec);
+            id +=1;
+        }
+    }
+    tile_rectangles
 }

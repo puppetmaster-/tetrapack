@@ -1,6 +1,8 @@
-use tetra::graphics::{Drawable, Color, DrawParams, Vec2, Text, Rectangle, Font};
+use tetra::graphics::{Drawable, Color, DrawParams, Rectangle};
 use tetra::input::{self, MouseButton};
-use tetra::{Context, glm};
+use tetra::{Context};
+use tetra::math::Vec2;
+use tetra::graphics::text::{Text, Font};
 
 #[allow(dead_code)]
 pub struct TextButton{
@@ -12,13 +14,13 @@ pub struct TextButton{
 	normal_color: Color,
 	hover_color: Color,
 	pressed_color: Color,
-	position: Vec2
+	position: Vec2<f32>
 }
 
 impl TextButton{
-	pub fn new(text: &str, position: Vec2) -> Self {
-		let text = Text::new(text, Font::default(), 12.0);
-		TextButton{
+	pub fn new(ctx: &mut Context, _text: &str, position: Vec2<f32>) -> tetra::Result<TextButton> {
+		let text = Text::new("OK", Font::vector(ctx,"../../resources/DejaVuSansMono.ttf",12.0)?);
+		Ok(TextButton{
 			pressed: false,
 			centered: true,
 			visible: true,
@@ -28,20 +30,21 @@ impl TextButton{
 			pressed_color: Color::rgb(0.0, 0.8, 0.0),
 			text,
 			position,
-		}
+		})
 	}
 
+	/*
 	pub fn font_size(mut self, font_size: f32) -> Self{
 		self.text.set_size(font_size);
 		self
-	}
+	}*/
 
 	pub fn text(mut self, text: &str) -> Self{
 		self.text.set_content(text);
 		self
 	}
 
-	pub fn position(mut self, position: Vec2) -> Self{
+	pub fn position(mut self, position: Vec2<f32>) -> Self{
 		self.position = position;
 		self
 	}
@@ -86,10 +89,10 @@ impl TextButton{
 
 	pub fn update(&mut self, ctx: &mut Context){
 		if self.visible{
-			let mouse_position = glm::round(&input::get_mouse_position(ctx));
+			let mouse_position = &input::get_mouse_position(ctx).round();
 			let bounds = self.text.get_bounds(ctx).unwrap();
 
-			if is_inside_hover_area(self.centered, self.position, bounds, mouse_position) {
+			if is_inside_hover_area(self.centered, self.position, bounds, *mouse_position) {
 				if input::is_mouse_button_down(ctx, MouseButton::Left){
 					self.color = self.pressed_color;
 				}else{
@@ -118,7 +121,7 @@ impl Drawable for TextButton {
 			params.color = self.color;
 			if self.centered{
 				let bounds = self.text.get_bounds(ctx).unwrap();
-				params.origin = Vec2::new(bounds.width/2.0,bounds.height/2.0);
+				params.origin = Vec2::new(bounds.width/2.0,bounds.height/2.0).round();
 			}
 
 			self.text.draw(ctx, params)
@@ -126,7 +129,7 @@ impl Drawable for TextButton {
 	}
 }
 
-fn is_inside_hover_area(centered: bool, draw_position: Vec2, area: Rectangle, position: Vec2) -> bool{
+fn is_inside_hover_area(centered: bool, draw_position: Vec2<f32>, area: Rectangle, position: Vec2<f32>) -> bool{
 	let mut pos_x = draw_position.x;
 	let mut pos_y = draw_position.y;
 	if centered {

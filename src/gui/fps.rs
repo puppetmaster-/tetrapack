@@ -1,8 +1,9 @@
 
-use tetra::graphics::{Drawable, DrawParams, Font, Text, Color};
+use tetra::graphics::{Drawable, DrawParams, Color};
 use tetra::{Context};
 
 use tetra::time;
+use tetra::graphics::text::{Text, Font};
 
 pub struct Fps{
     text: Text,
@@ -21,8 +22,7 @@ impl Fps{
             P: Into<FpsParams>,
     {
         let params = params.into();
-
-        let text = Text::new("FPS", font, params.font_size, );
+        let text = Text::new("FPS", font);
 
         Fps {
             text,
@@ -65,10 +65,11 @@ impl Fps{
         self
     }
 
+    /*
     pub fn font_size(&mut self, size: f32) -> &mut Self{
         self.text.set_size(size);
         self
-    }
+    }*/
 }
 
 impl Drawable for Fps {
