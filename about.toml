@@ -1,0 +1,14 @@
+accepted = [
+    "Apache-2.0",
+    "MIT",
+    "Zlib",
+    "BSD-3-Clause",
+]
+
+targets = [
+    "x86_64-pc-windows-msvc"
+]
+
+ignore-build-dependencies = true
+ignore-dev-dependencies = true
+
