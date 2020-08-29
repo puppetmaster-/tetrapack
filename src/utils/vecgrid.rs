@@ -32,6 +32,10 @@ impl<T> VecGrid<T> {
         self.data[x + (y * self.width)] = Some(cell);
     }
 
+    pub fn delete(&mut self, x: usize, y: usize){
+        self.data[x + (y * self.width)] = None;
+    }
+
     pub fn get_data(&self) -> &Vec<Option<T>>{
         &self.data
     }
