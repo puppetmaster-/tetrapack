@@ -64,12 +64,12 @@ impl State for SceneManager {
 					println!("{}",s);
 				}
 				Transition::Push(s) => {
-					active_scene.save();
+					active_scene.save()?;
 					self.scenes.push(s);
 					self.init_scene()?;
 				}
 				Transition::Pop => {
-					active_scene.save();
+					active_scene.save()?;
 					self.scenes.pop();
 					self.init_scene()?;
 				}
