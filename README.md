@@ -5,8 +5,8 @@
 
 Extension for the 2D game framework [Tetra](https://github.com/17cupsofcoffee/tetra)
 
-While creating my games I filled the tetrapack with useful extensions.
-As far as possible I tried to create them independently so that they can be used in other games.
+While creating my games I filled the tetrapack with useful extensions.<br>
+As far as possible I tried to create them independently so that they can be used in other games.<br>
 
 ```rust
 [dependencies.tetrapack]
@@ -25,7 +25,7 @@ let my_timer = Timer::new_sec(30);
 ```
 
 ### [Music](https://github.com/puppetmaster-/tetrapack/blob/master/src/sound/music.rs)
-Can be used as background music. The music is faded in and faded out when stopped manually.
+Can be used as background music. The music is faded in and faded out when stopped manually.<br>
 Can be configured with a repeat interval.
 ```rust
 // play music.ogg and repeat it after 300 seconds
@@ -36,7 +36,7 @@ let my_music = Music::new(ctx,include_bytes!("../../assets/music.ogg"),300)?;
 Can be used to draw a custom mouse cursor.
 
 ### [input actions](https://github.com/puppetmaster-/tetrapack/blob/master/src/input_action.rs)
-there are the following fixed actions: is_any_key(), is_cancel(),is_confirmation()
+there are the following fixed actions: is_any_key(), is_cancel(),is_confirmation()<br>
 and they must be used in the event() function
 ```rust
 fn event(&mut self, _ctx: &mut Context, event: Event) -> tetra::Result {
@@ -79,9 +79,9 @@ ___
 
 It would be great if this list would grow further...
 
-I have been programming as a hobby for around a year in rust.
-It is very possible that my code does not comply with the textbook and contains errors.
-If you find something that can be solved better or more elegantly or if you even have a new useful extension,
+I have been programming as a hobby for around a year in rust.<br>
+It is very possible that my code does not comply with the textbook and contains errors.<br>
+If you find something that can be solved better or more elegantly or if you even have a new useful extension,<br>
 it would be great if you could contribute to this project then we can all benefit from each other.
 
 Have fun using and extending it.
