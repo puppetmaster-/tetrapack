@@ -2,12 +2,13 @@
 name = "tetrapack"
 description = "Various small add-ons for the tetra game engine"
 version = "0.3.0"
+edition = '2018'
 repository = "https://github.com/puppetmaster-/tetrapack"
 authors = ["puppetmaster <github@puppetmaster.ch>"]
 license = "MIT"
 readme = "README.md"
-edition = '2018'
-required-features = ["default"]
+keywords = ["tetra", "gamedev", "extension"]
+categories = ["gamedev"]
 
 [dependencies.serde]
 version = "1.0"
