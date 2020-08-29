@@ -6,6 +6,7 @@ pub mod animation;
 pub mod input_action;
 pub mod gui;
 pub mod utils;
+pub mod sound;
 
 // experimental pack
 mod experimental;
