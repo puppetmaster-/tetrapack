@@ -25,14 +25,14 @@ impl SplashScreenScene {
         let tween1 = Tween::from_keyframes(vec![
             Keyframe::new(0.0,0.0,EaseInOutQuint),
             Keyframe::new(5.0,0.5,EaseInOutQuint),
-            Keyframe::new(0.0,1.0,EaseInOut)], 4,true);
+            Keyframe::new(0.0,1.0,EaseInOut)], 0,4,true);
         let tween2 = Tween::from_keyframes(vec![
             Keyframe::new(-0.1,0.0,EaseInOutQuint),
             Keyframe::new(0.1,0.5,EaseInOutQuint),
-            Keyframe::new(-0.1,1.0,EaseInOut)],4,true);
+            Keyframe::new(-0.1,1.0,EaseInOut)],0,4,true);
         let tween3 = Tween::from_keyframes(vec![
             Keyframe::new(0.0,0.0,Linear),
-            Keyframe::new(6.283_185_5,1.0,Linear)],10,true);
+            Keyframe::new(6.283_185_5,1.0,Linear)],0,10,true);
         let tween = vec![tween1, tween2, tween3];
         Ok(SplashScreenScene {
             atlas: Texture::from_file_data(ctx, include_bytes!("../../resources/splashScreen/atlas.png"))?,
