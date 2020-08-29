@@ -84,31 +84,26 @@ impl State for SceneManager {
 	}
 
 	fn draw(&mut self, ctx: &mut Context) -> tetra::Result {
-		match self.screen_scaler.as_ref(){
-			Some(scaler) => graphics::set_canvas(ctx, scaler.canvas()),
-			_ => {}
+		if let Some(scaler) = self.screen_scaler.as_ref() {
+			graphics::set_canvas(ctx, scaler.canvas())
 		}
 
 		if let Some(active_scene) = self.scenes.last_mut() {
 			active_scene.draw(ctx)?
 		}
 
-		match self.screen_scaler.as_ref(){
-			Some(scaler) => {
-				graphics::reset_canvas(ctx);
-				graphics::reset_transform_matrix(ctx);
-				graphics::draw(ctx, scaler, TetraVec2::zero());
-			},
-			_ => {}
+		if let Some(scaler) = self.screen_scaler.as_ref() {
+			graphics::reset_canvas(ctx);
+			graphics::reset_transform_matrix(ctx);
+			graphics::draw(ctx, scaler, TetraVec2::zero());
 		}
 		Ok(())
 	}
 
 	fn event(&mut self, ctx: &mut Context, event: Event) -> tetra::Result {
 		if let Event::Resized { width, height } = event {
-			match self.screen_scaler.as_mut(){
-				Some(scaler) => scaler.set_outer_size(width, height),
-				_ => {}
+			if let Some(scaler) = self.screen_scaler.as_mut() {
+				scaler.set_outer_size(width, height)
 			}
 		}
 		match self.scenes.last_mut() {

@@ -113,9 +113,8 @@ impl Tilemap{
     }
 
     pub fn visibility(&mut self, layer: usize, visibility: bool){
-        match self.layers.get_mut(layer){
-            Some(mut l) => {l.visibility = visibility},
-            None => ()
+        if let Some(mut l) = self.layers.get_mut(layer) {
+            l.visibility = visibility
         }
     }
 
