@@ -78,68 +78,66 @@ impl Tilemap{
         self
     }
 
-    pub fn get_position_from_id(&self,layer: usize, id: u32)-> TetraVec2{
-        match self.layers.get(layer) {
-            None => TetraVec2::zero(),
-            Some(layer) => {
-                let tiles = &*layer.tiles.get_data();
-                for (i,t) in tiles.iter(). enumerate(){
-                    if t.is_some() && t.as_ref().unwrap().id == id{
-                        let x = (i % self.width) * self.tile_width as usize;
-                        let y = ((i / self.width)+1) * self.tile_height as usize;
-                        return TetraVec2::new((x+1) as f32,(y-1) as f32)
-                    }
+    pub fn get_all_position_from_id(&self,layer: usize, id: u32) -> Vec<TetraVec2>{
+        let mut positions = Vec::new();
+        if let Some(layer) = self.layers.get(layer) {
+            let tiles = &*layer.tiles.get_data();
+            for (i,t) in tiles.iter().enumerate(){
+                if t.is_some() && t.as_ref().unwrap().id == id{
+                    let x = (i % self.width) * self.tile_width as usize;
+                    let y = ((i / self.width)+1) * self.tile_height as usize;
+                    positions.push(TetraVec2::new((x+1) as f32,(y-1) as f32));
                 }
-                TetraVec2::zero()
             }
-        }
+        };
+        positions
     }
 
     pub fn replace_all_tileid(&mut self, layer: usize, old_id: u32, new_id: Option<u32>){
-        match self.layers.get_mut(layer) {
-            None => error!("layer{} not found!", layer),
-            Some(layer) => {
-                for x in 0..self.height{
-                    for y in 0..self.width{
-                        if let Some(tile) = layer.tiles.get_mut(x,y) {
-                            if tile.id == old_id {
-                                if let Some(id) = new_id{
-                                    tile.id = id;
-                                } else {
-                                    layer.tiles.delete(x, y);
-                                }
+        if let Some(layer) = self.layers.get_mut(layer) {
+            for x in 0..self.height {
+                for y in 0..self.width {
+                    if let Some(tile) = layer.tiles.get_mut(x, y) {
+                        if tile.id == old_id {
+                            if let Some(id) = new_id {
+                                tile.id = id;
+                            } else {
+                                layer.tiles.delete(x, y);
                             }
                         }
                     }
                 }
             }
+        }else{
+            error!("layer{} not found!", layer);
         }
     }
 
     pub fn set_tileid_at(&mut self, layer: usize, new_id: u32, position: TetraVec2){
         let x = (position.x as i64 / self.tile_width) as usize;
         let y = (position.y as i64 / self.tile_height) as usize;
-        match self.layers.get_mut(layer){
-            None => error!("layer{} not found!", layer),
-            Some(layer) => {
-                match layer.tiles.get_mut(x, y){
-                    None => layer.tiles.set(Tile{
-                            id: new_id,
-                            x: x as i64,
-                            y: y as i64,
-                            position_x: (x as i64 * self.tile_width) as f32,
-                            position_y: (y as i64 * self.tile_height) as f32,
-                            ..Tile::default()
-                        }, x, y),
-                    Some(tile) => tile.id = new_id,
-                };
-            },
-        };
+        if let Some(layer) = self.layers.get_mut(layer){
+            match layer.tiles.get_mut(x, y){
+                None => layer.tiles.set(Tile{
+                        id: new_id,
+                        x: x as i64,
+                        y: y as i64,
+                        position_x: (x as i64 * self.tile_width) as f32,
+                        position_y: (y as i64 * self.tile_height) as f32,
+                        ..Tile::default()
+                    }, x, y),
+                Some(tile) => tile.id = new_id,
+            };
+        }else{
+            error!("layer{} not found!", layer);
+        }
     }
 
     pub fn visibility(&mut self, layer: usize, visibility: bool){
         if let Some(mut l) = self.layers.get_mut(layer) {
             l.visibility = visibility
+        }else{
+            error!("layer{} not found!", layer);
         }
     }
 
@@ -153,9 +151,11 @@ impl Tilemap{
     }
 
     pub fn get_layer_name(&self, layer: usize) ->&str{
-        match self.layers.get(layer as usize){
-            None => "",
-            Some(layer) => &layer.name,
+        if let Some(layer) = self.layers.get(layer as usize){
+            &layer.name
+        }else{
+            error!("layer{} not found!", layer);
+            ""
         }
     }
 
