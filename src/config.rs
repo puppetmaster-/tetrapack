@@ -2,6 +2,7 @@ use tetra::graphics::Color;
 use tetra::math::Vec2;
 use crate::TetraVec2;
 use serde::{Serialize,Deserialize};
+use log::{error};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
@@ -38,7 +39,7 @@ pub fn load_config(path: &str) -> Config{
 	match ron::from_str(path){
 		Ok(config) => config,
 		Err(error) => {
-			println!("Failed to load config: {}", error);
+			error!("Failed to load config: {}", error);
 			std::process::exit(1);
 		}
 	}

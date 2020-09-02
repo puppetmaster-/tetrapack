@@ -9,7 +9,7 @@ pub fn load_context(path: &str) -> ContextBuilder{
 	match ron::from_str(path){
 		Ok(cb) => cb,
 		Err(error) => {
-			println!("Failed to load contextBuilder: {}", error);
+			error!("Failed to load contextBuilder: {}", error);
 			std::process::exit(1);
 		}
 	}

@@ -60,9 +60,7 @@ impl State for SceneManager {
 		match self.scenes.last_mut() {
 			Some(active_scene) => match active_scene.update(ctx)? {
 				Transition::None => {}
-				Transition::Load(s) =>{
-					println!("{}",s);
-				}
+				Transition::Load(s) =>{}
 				Transition::Push(s) => {
 					active_scene.save()?;
 					self.scenes.push(s);
@@ -109,9 +107,7 @@ impl State for SceneManager {
 		match self.scenes.last_mut() {
 			Some(active_scene) => match active_scene.event(ctx, event)?{
 				Transition::None => {}
-				Transition::Load(s) =>{
-					println!("{}",s);
-				}
+				Transition::Load(s) =>{}
 				Transition::Push(s) => {
 					self.scenes.push(s);
 					self.init_scene()?;
