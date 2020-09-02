@@ -23,7 +23,7 @@ pub struct Button{
 }
 
 impl Button{
-	pub fn new(ctx: &mut Context, position: TetraVec2) -> tetra::Result<Button> {
+	pub fn new(ctx: &mut Context,text: &str, font: Font,position: TetraVec2) -> tetra::Result<Button> {
 		let width = 55.0;
 		let height = 25.0;
 		let textures = get_textures(ctx)?;
@@ -37,45 +37,24 @@ impl Button{
 			disabled: false,
 			centered: true,
 			state: ButtonState::Normal,
-			text: Text::new(
-				"OK",
-				Font::vector(ctx,"../../resources/DejaVuSansMono.ttf",18.0)?,
-			),
+			text: Text::new(text, font),
 			text_colors: get_text_colors(),
 			text_frame_size: 10.0,
 			panel,
 		})
 	}
 
-	pub fn content(mut self, text: &str) -> Self{
+	pub fn text(mut self, text: &str) -> Self{
 		self.text.set_content(text);
 		self
 	}
-
-	pub fn set_content(&mut self, text: &str){
-		self.text.set_content(text);
-	}
-
-	pub fn get_mut_text(&mut self) -> &mut Text{
-		&mut self.text
-	}
-
 	pub fn position(mut self, position: Vec2<f32>) -> Self{
 		self.position = position;
 		self
 	}
 
-	pub fn set_position(&mut self, position: Vec2<f32>){
-		self.position = position;
-	}
-
 	pub fn visible(mut self, visible: bool) -> Self{
 		self.visible = visible;
-		self
-	}
-
-	pub fn text_color(mut self, state: ButtonState, color: Color) ->Self{
-		self.text_colors.entry(state).or_insert(color);
 		self
 	}
 
@@ -84,8 +63,29 @@ impl Button{
 		self
 	}
 
+	pub fn text_color(mut self, state: ButtonState, color: Color) ->Self{
+		self.text_colors.entry(state).or_insert(color);
+		self
+	}
+
+	pub fn set_text(&mut self, text: &str){
+		self.text.set_content(text);
+	}
+
+	pub fn get_mut_text(&mut self) -> &mut Text{
+		&mut self.text
+	}
+
+	pub fn set_position(&mut self, position: Vec2<f32>){
+		self.position = position;
+	}
+
 	pub fn set_bounds(&mut self, bounds: Rectangle){
 		self.panel.set_fill_rect(bounds);
+	}
+
+	pub fn set_visible(mut self, visible: bool){
+		self.visible = visible;
 	}
 
 	//not the best way to do it

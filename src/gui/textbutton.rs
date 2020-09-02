@@ -18,8 +18,7 @@ pub struct TextButton{
 }
 
 impl TextButton{
-	pub fn new(ctx: &mut Context, _text: &str, position: Vec2<f32>) -> tetra::Result<TextButton> {
-		let text = Text::new("OK", Font::vector(ctx,"../../resources/DejaVuSansMono.ttf",12.0)?);
+	pub fn new(text: &str, font: Font, position: Vec2<f32>) -> tetra::Result<TextButton> {
 		Ok(TextButton{
 			pressed: false,
 			centered: true,
@@ -28,7 +27,7 @@ impl TextButton{
 			normal_color: Color::rgb(1.0,1.0,1.0),
 			hover_color: Color::rgb(1.0, 0.0, 0.0),
 			pressed_color: Color::rgb(0.0, 0.8, 0.0),
-			text,
+			text: Text::new(text, font),
 			position,
 		})
 	}
