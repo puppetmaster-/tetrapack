@@ -13,44 +13,63 @@ categories = ["gamedev"]
 [dependencies.serde]
 version = "1.0"
 features = ["derive"]
+optional = true
 
 [dependencies.serde_json]
 version = "1.0"
+optional = true
 
 [dependencies.serde_derive]
 version = "1.0"
+optional = true
 
 [dependencies.serde-xml-rs]
 version = "0.4.0"
+optional = true
 
 [dependencies.rand]
 version = "0.7.3"
+optional = true
 
 [dependencies.rand_core]
 version = "0.5.1"
+optional = true
 
 [dependencies.tetra]
-features = ["serde_support"]
-# -- GIT --
-git = "https://github.com/17cupsofcoffee/tetra"
-branch = "main"
+default-features = false
 # -- cargo.io --
-#version = "0.4.2"
+version = "0.5.0"
+# -- GIT --
+#git = "https://github.com/17cupsofcoffee/tetra"
+#branch = "main"
 # -- local --
 #path = "../tetra"
 
-[dependencies.bytemuck]
-version = "1.4.0"
-
 [dependencies.keyframe]
-version = "1.0.2"
+version = "1.0.3"
+optional = true
 
 [dependencies.keyframe_derive]
 version = "1.0.0"
+optional = true
 
 [dependencies.log]
-version = "0.4"
+version = "0.4.11"
 features = ["max_level_debug", "release_max_level_warn"]
 
 [dependencies.ron]
-version = "0.6.0"
+version = "0.6.1"
+optional = true
+
+[features]
+default = []
+all = ["ron_file","tilemap","animation","randomize","sound"]
+animation = ["keyframe","keyframe_derive"]
+randomize = ["rand","rand_core"]
+ron_file = ["ron","serde","serde_derive"]
+sound = []
+tilemap = ["tilemap_json","tilemap_xml"]
+tilemap_json = ["serde_json","serde","serde_derive"]
+tilemap_xml = ["serde-xml-rs","serde","serde_derive"]
+
+

@@ -1,10 +1,14 @@
+#![allow(unused)]
+#[cfg(feature = "ron_file")]
 use tetra::ContextBuilder;
+use log::error;
 
 pub mod ron;
 pub mod timer;
 pub mod vecgrid;
 
 #[allow(dead_code)]
+#[cfg(feature = "ron_file")]
 pub fn load_context(path: &str) -> ContextBuilder{
 	match ron::from_str(path){
 		Ok(cb) => cb,

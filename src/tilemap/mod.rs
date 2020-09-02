@@ -1,14 +1,17 @@
+#[cfg(feature = "tilemap_json")]
 pub mod pyxeledit;
+#[cfg(feature = "tilemap_xml")]
 pub mod tiled;
 pub mod tile_animation;
 
 use std::collections::HashMap;
 use log::{info,debug,error};
-
 use tetra::graphics::{Texture, Color, Rectangle, Drawable, DrawParams};
 use tetra::Context;
 use tetra::math::Vec2;
+#[cfg(feature = "tilemap_json")]
 use crate::tilemap::pyxeledit::PyxelTilemap;
+#[cfg(feature = "tilemap_xml")]
 use crate::tilemap::tiled::TiledTilemap;
 use crate::TetraVec2;
 use crate::utils::vecgrid::VecGrid;
@@ -31,11 +34,13 @@ impl Tilemap{
         }
     }
 
+    #[cfg(feature = "tilemap_json")]
     pub fn from_pyxeledit(clip: Rectangle, data: &str) -> Tilemap{
         let pyxeltilemap = PyxelTilemap::new(data);
         transform_pyxeltilemap(clip, pyxeltilemap)
     }
 
+    #[cfg(feature = "tilemap_xml")]
     pub fn from_tiled(clip: Rectangle, data: &str) -> Tilemap{
         let tiledtilemap = TiledTilemap::new(data);
         transform_tiledtilemap(clip, tiledtilemap)
@@ -304,6 +309,7 @@ fn get_tile_rectangles(clip: Rectangle, tile_width: i64, tile_height: i64) ->Has
     tile_rectangles
 }
 
+#[cfg(feature = "tilemap_json")]
 fn transform_pyxeltilemap(clip: Rectangle, pyxeltilemap: PyxelTilemap) ->Tilemap{
     Tilemap{
         width: pyxeltilemap.tileswide as usize,
@@ -317,6 +323,7 @@ fn transform_pyxeltilemap(clip: Rectangle, pyxeltilemap: PyxelTilemap) ->Tilemap
     }
 }
 
+#[cfg(feature = "tilemap_json")]
 fn transform_pyxellayer(pyxellayers: &[pyxeledit::Layers], width: usize, height: usize) ->Vec<Layer>{
     let mut layers: Vec<Layer> = Vec::new();
     for pyxellayer in pyxellayers.iter().rev(){
@@ -330,6 +337,7 @@ fn transform_pyxellayer(pyxellayers: &[pyxeledit::Layers], width: usize, height:
     layers
 }
 
+#[cfg(feature = "tilemap_json")]
 fn transform_pyxeltile(pyxeltiles: &[pyxeledit::Tile], width: usize, height: usize) -> VecGrid<Tile>{
     let mut vecgrid: VecGrid<Tile> = VecGrid::new(width, height);
     for t in pyxeltiles.iter(){
@@ -347,6 +355,7 @@ fn transform_pyxeltile(pyxeltiles: &[pyxeledit::Tile], width: usize, height: usi
     vecgrid
 }
 
+#[cfg(feature = "tilemap_xml")]
 fn transform_tiledtilemap(clip: Rectangle, tiledtilemap: TiledTilemap) ->Tilemap{
     Tilemap{
         width: tiledtilemap.tilewidth,
@@ -360,6 +369,7 @@ fn transform_tiledtilemap(clip: Rectangle, tiledtilemap: TiledTilemap) ->Tilemap
     }
 }
 
+#[cfg(feature = "tilemap_xml")]
 fn transform_tiledlayer(tiledlayers: &[tiled::Layer], width: usize, height: usize) ->Vec<Layer>{
     let mut layers: Vec<Layer> = Vec::new();
     for tiledlayer in tiledlayers.iter(){
@@ -373,6 +383,7 @@ fn transform_tiledlayer(tiledlayers: &[tiled::Layer], width: usize, height: usiz
     layers
 }
 
+#[cfg(feature = "tilemap_xml")]
 fn transform_tiledtile(tiledtiles: &[tiled::Tile], width: usize, height: usize) -> VecGrid<Tile>{
     let mut vecgrid: VecGrid<Tile> = VecGrid::new(width, height);
     for t in tiledtiles.iter(){

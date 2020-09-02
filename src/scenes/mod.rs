@@ -1,9 +1,12 @@
 use tetra::{Context, Event, window, State, graphics};
-use crate::scenes::splash_screen::SplashScreenScene;
 use tetra::graphics::scaling::ScreenScaler;
 use crate::TetraVec2;
+use log::debug;
 
+#[cfg(feature = "animation")]
 pub mod splash_screen;
+#[cfg(feature = "animation")]
+use crate::scenes::splash_screen::SplashScreenScene;
 
 pub trait Scene {
 	fn init(&mut self) -> tetra::Result;
@@ -35,6 +38,7 @@ impl SceneManager {
 			screen_scaler: None
 		}
 	}
+	#[cfg(feature = "animation")]
 	pub fn new_with_splash_screen(ctx: &mut Context,initial_scene: Box<dyn Scene>) -> SceneManager {
 		SceneManager {
 			scenes: vec![initial_scene, Box::new(SplashScreenScene::new(ctx).unwrap())],
@@ -60,7 +64,9 @@ impl State for SceneManager {
 		match self.scenes.last_mut() {
 			Some(active_scene) => match active_scene.update(ctx)? {
 				Transition::None => {}
-				Transition::Load(s) =>{}
+				Transition::Load(s) =>{
+					debug!("load scene {}", s);
+				}
 				Transition::Push(s) => {
 					active_scene.save()?;
 					self.scenes.push(s);
@@ -107,7 +113,9 @@ impl State for SceneManager {
 		match self.scenes.last_mut() {
 			Some(active_scene) => match active_scene.event(ctx, event)?{
 				Transition::None => {}
-				Transition::Load(s) =>{}
+				Transition::Load(s) =>{
+					debug!("load scene {}", s);
+				}
 				Transition::Push(s) => {
 					self.scenes.push(s);
 					self.init_scene()?;
