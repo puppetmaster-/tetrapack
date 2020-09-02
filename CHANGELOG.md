@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.1 - 2020-09-02
+* binds tetra with _default-features = false_
+* loading of the different extensions can be controlled with features, by default only log and tetra are loaded
+ possible features are ["ron_file","tilemap","animation","randomize","sound"]
+* removed font
+* tilemap: replace get_position_from_id with get_all_position_from_id
+
 ## 0.3.0 - 2020-08-29
 * cargo.toml rearranged
 * add license.html
