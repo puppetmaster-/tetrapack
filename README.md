@@ -11,8 +11,21 @@ As far as possible I tried to create them independently so that they can be used
 ```rust
 [dependencies.tetrapack]
 git = "https://github.com/puppetmaster-/tetrapack"
+default-features = false
+features = [...]
 ```
-
+## Features
+| Feature | Description |
+| ------ | ----------- |
+| animation | load crate **keyframe**, is needed for the tetra splash_screen |
+| randomize | load crates **rand** and **rand_core** |
+| ron_file | load crates **ron**, **serde**, **serde_derive** and requires tetra **serde_support** feature |
+| tilemap | load both tilemap features (tilemap_json and tilemap_xml) |
+| tilemap_json | load crates **serde_json**, **serde**, **serde_derive** and requires tetra **serde_support** feature |
+| tilemap_xml | load crates **serde-xml-rs**, **serde**, **serde_derive** |
+| sound | requires one of the **sound** features of tetra |
+| all | I only use it for testing, of course you could also use it too, then everything is always loaded |
+| _default_ | no additional crates are loaded only a few tetrapack extensions are still available |
 ___
 
 ## Extensions
