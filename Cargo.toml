@@ -38,7 +38,7 @@ optional = true
 [dependencies.tetra]
 default-features = false
 # -- cargo.io --
-version = "0.6.2"
+version = "0.8.0"
 # -- GIT --
 #git = "https://github.com/17cupsofcoffee/tetra"
 #branch = "main"
